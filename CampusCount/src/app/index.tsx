@@ -1,18 +1,14 @@
 import { useState } from 'react';
 import { Alert, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { EventItem, initialEvents } from '../data/events';
 
 type Page = 'home' | 'scan' | 'history' | 'profile' | 'events' | 'reports';
-type EventItem = { title: string; date: string; time: string; place: string; kind: string; color: string; attending: number };
+
 
 const ink = '#18251F';
 const green = '#176B4A';
 const muted = '#77827C';
-const initialEvents: EventItem[] = [
-  { title: 'Campus Clean-up Drive', date: 'OCT 04', time: '8:00 AM', place: 'Main Quadrangle', kind: 'COMMUNITY', color: '#DDF3E8', attending: 86 },
-  { title: 'Student Leaders Assembly', date: 'OCT 08', time: '1:30 PM', place: 'Auditorium', kind: 'CAMPUS', color: '#E7E8FF', attending: 124 },
-  { title: 'Tech Week 2026', date: 'OCT 12', time: '9:00 AM', place: 'Engineering Hall', kind: 'ACADEMIC', color: '#FFF0D8', attending: 203 },
-];
 
 function Label({ children }: { children: string }) { return <Text style={styles.label}>{children}</Text>; }
 function Action({ title, onPress, light = false }: { title: string; onPress: () => void; light?: boolean }) {

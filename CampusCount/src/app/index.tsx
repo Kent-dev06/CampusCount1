@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Alert, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+
 type Page = 'home' | 'scan' | 'history' | 'profile' | 'events' | 'reports';
 type EventItem = { title: string; date: string; time: string; place: string; kind: string; color: string; attending: number };
 
@@ -46,7 +47,7 @@ export default function HomeScreen() {
   const header = (eyebrow: string, title: string, subtitle?: string) => <View style={styles.pageHead}><Text style={styles.eyebrow}>{eyebrow}</Text><Text style={styles.pageTitle}>{title}</Text>{subtitle ? <Text style={styles.pageSubtitle}>{subtitle}</Text> : null}</View>;
   const dashboard = () => <>
     <View style={styles.topline}><View><Text style={styles.eyebrow}>MONDAY, SEPTEMBER 28</Text><Text style={styles.greeting}>Good morning, Alex <Text style={{ color: '#E5A847' }}>✦</Text></Text></View><TouchableOpacity style={styles.avatar} onPress={() => setPage('profile')}><Text style={styles.avatarText}>AR</Text></TouchableOpacity></View>
-    <View style={styles.hero}><View style={styles.heroAccent}><Text style={styles.heroKicker}>YOUR CAMPUS, IN SYNC</Text><Text style={styles.heroTitle}>Show up.{ '\n' }Be counted.</Text><Text style={styles.heroCaption}>Every moment on campus matters.</Text><TouchableOpacity style={styles.heroButton} onPress={() => router.push('/scan')}><Text style={styles.heroButtonText}>▦   Scan attendance  →</Text></TouchableOpacity></View><View style={styles.heroOrb}><Text style={styles.orbGlyph}>✓</Text></View></View>
+    <View style={styles.hero}><View style={styles.heroAccent}><Text style={styles.heroKicker}>YOUR CAMPUS, IN SYNC</Text><Text style={styles.heroTitle}>Show up.{ '\n' }Be counted.</Text><Text style={styles.heroCaption}>Every moment on campus matters.</Text><TouchableOpacity style={styles.heroButton} onPress={() => { setScanned(false); router.push('/scan'); }}><Text style={styles.heroButtonText}>▦   Scan attendance  →</Text></TouchableOpacity></View><View style={styles.heroOrb}><Text style={styles.orbGlyph}>✓</Text></View></View>
     <View style={styles.statsRow}><View style={styles.stat}><Text style={styles.statNumber}>12</Text><Text style={styles.statLabel}>EVENTS ATTENDED</Text><Text style={styles.statChange}>↑ 3 this month</Text></View><View style={styles.statDivider}/><View style={styles.stat}><Text style={styles.statNumber}>92<Text style={styles.percent}>%</Text></Text><Text style={styles.statLabel}>ATTENDANCE RATE</Text><Text style={styles.statChange}>Looking good!</Text></View></View>
     <View style={styles.sectionRow}><Label>UP NEXT</Label><TouchableOpacity onPress={() => setPage('events')}><Text style={styles.link}>See all  →</Text></TouchableOpacity></View>
     {events.slice(0, 2).map((event, i) => <EventCard key={`${event.title}-${i}`} item={event} onPress={() => Alert.alert(event.title, `${event.date} · ${event.time}\n${event.place}\n${event.attending} students attending`)} button="Details" />)}
@@ -67,7 +68,18 @@ export default function HomeScreen() {
   const profilePage = () => <>{header('ACCOUNT', 'Your profile', 'Manage your CampusCount account.')}
     <View style={styles.profileCard}><View style={[styles.avatar, styles.profileAvatar]}><Text style={styles.avatarText}>{name.split(' ').map(x => x[0]).join('')}</Text></View><Text style={styles.profileName}>{name}</Text><Text style={styles.profileEmail}>alex.rivera@campus.edu</Text><Text style={styles.profileRole}>{role.toUpperCase()}  ·  COMPUTER SCIENCE</Text></View>
     <Label>PERSONAL INFORMATION</Label><Text style={styles.inputLabel}>Display name</Text><TextInput value={name} onChangeText={setName} style={styles.input} placeholder="Your name" placeholderTextColor="#89938E"/><Text style={styles.inputLabel}>Email address</Text><TextInput value="alex.rivera@campus.edu" editable={false} style={[styles.input, styles.inputDisabled]}/>
-    <Label>APP PREFERENCES</Label><TouchableOpacity style={styles.settingRow} onPress={() => Alert.alert('Notifications', 'Event reminders are turned on.')}><Text style={styles.settingIcon}>♧</Text><Text style={styles.settingName}>Event notifications</Text><Text style={styles.settingValue}>On  ›</Text></TouchableOpacity><TouchableOpacity style={styles.settingRow} onPress={() => setRole(role === 'Student' ? 'Organizer' : 'Student')}><Text style={styles.settingIcon}>⇄</Text><Text style={styles.settingName}>Switch account view</Text><Text style={styles.settingValue}>{role}  ›</Text></TouchableOpacity><Action title="Sign out" light onPress={signOut}/>
+    
+    <Label>APP PREFERENCES</Label>
+    
+    <TouchableOpacity style={styles.settingRow} onPress={() => router.push('/id' as any)}>
+      <Text style={styles.settingIcon}>▣</Text>
+      <Text style={styles.settingName}>View Digital Student ID</Text>
+      <Text style={styles.settingValue}>›</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={styles.settingRow} onPress={() => Alert.alert('Notifications', 'Event reminders are turned on.')}><Text style={styles.settingIcon}>♧</Text><Text style={styles.settingName}>Event notifications</Text><Text style={styles.settingValue}>On  ›</Text></TouchableOpacity>
+    <TouchableOpacity style={styles.settingRow} onPress={() => setRole(role === 'Student' ? 'Organizer' : 'Student')}><Text style={styles.settingIcon}>⇄</Text><Text style={styles.settingName}>Switch account view</Text><Text style={styles.settingValue}>{role}  ›</Text></TouchableOpacity>
+    <Action title="Sign out" light onPress={signOut}/>
     </>;
 
   const eventsPage = () => <>{header('CAMPUS LIFE', 'Events', 'Find your people. Make your mark.')}<TextInput value={query} onChangeText={setQuery} placeholder="⌕   Search events" placeholderTextColor="#87918B" style={styles.search}/><View style={styles.filterRow}><Text style={styles.filterActive}>All events</Text><Text style={styles.filter}>This week</Text><Text style={styles.filter}>My events</Text></View><View style={styles.sectionRow}><Label>UPCOMING</Label><Text style={styles.countPill}>{events.length} events</Text></View>{events.filter(e => e.title.toLowerCase().includes(query.toLowerCase())).map((e, i) => <EventCard key={`${e.title}-${i}`} item={e} onPress={() => Alert.alert(e.title, `${e.date} · ${e.time}\n${e.place}\n${e.attending} students attending`)} button="Register"/> )}</>;
@@ -80,7 +92,13 @@ export default function HomeScreen() {
 
   if (!signedIn) return <SafeAreaView style={styles.loginScreen}><StatusBar barStyle="dark-content"/><View style={styles.loginLogo}><Text style={styles.logoGlyph}>✓</Text></View><Text style={styles.brand}>campus<Text style={{ color: green }}>count</Text></Text><Text style={styles.loginTitle}>Your campus life,{ '\n' }all in one place.</Text><Text style={styles.loginSubtitle}>Track attendance, discover events, and stay connected with your campus community.</Text><Text style={styles.inputLabel}>SCHOOL EMAIL</Text><TextInput style={styles.input} placeholder="you@campus.edu" placeholderTextColor="#89938E" keyboardType="email-address" autoCapitalize="none"/><Text style={styles.inputLabel}>PASSWORD</Text><TextInput style={styles.input} placeholder="Enter your password" placeholderTextColor="#89938E" secureTextEntry/><Action title="Sign in  →" onPress={signIn}/><Text style={styles.loginFoot}>A better campus experience starts here.</Text></SafeAreaView>;
 
-  return <SafeAreaView style={styles.safe} edges={['top']}><StatusBar barStyle="dark-content" backgroundColor="#F7F8F5"/><ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>{role === 'Organizer' && page === 'home' ? organizerPage() : page === 'home' ? dashboard() : page === 'scan' ? scanPage() : page === 'history' ? historyPage() : page === 'profile' ? profilePage() : page === 'events' ? eventsPage() : reportsPage()}</ScrollView><View style={styles.bottomNav}>{navItems.map(item => <TouchableOpacity key={item.id} style={styles.navItem} onPress={() => { if (item.id === 'scan') { router.push('/scan'); } else { setPage(item.id); } }}><Text style={[styles.navIcon, page === item.id && styles.navActive]}>{item.icon}</Text><Text style={[styles.navLabel, page === item.id && styles.navActive]}>{item.label}</Text></TouchableOpacity>)}</View></SafeAreaView>;
+  return <SafeAreaView style={styles.safe} edges={['top']}><StatusBar barStyle="dark-content" backgroundColor="#F7F8F5"/><ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>{role === 'Organizer' && page === 'home' ? organizerPage() : page === 'home' ? dashboard() : page === 'scan' ? scanPage() : page === 'history' ? historyPage() : page === 'profile' ? profilePage() : page === 'events' ? eventsPage() : reportsPage()}</ScrollView><View style={styles.bottomNav}>{navItems.map(item => <TouchableOpacity key={item.id} style={styles.navItem} onPress={() => {
+    if (item.id === 'scan') {
+      router.push('/scan');
+    } else {
+      setPage(item.id);
+    }
+  }}><Text style={[styles.navIcon, page === item.id && styles.navActive]}>{item.icon}</Text><Text style={[styles.navLabel, page === item.id && styles.navActive]}>{item.label}</Text></TouchableOpacity>)}</View></SafeAreaView>;
 }
 
 const styles = StyleSheet.create({

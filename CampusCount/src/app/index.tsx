@@ -11,6 +11,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import {
+  CameraView,
+  useCameraPermissions,
+} from 'expo-camera';
+
+import * as Location from 'expo-location';
+
 import EventCard from '../components/EventCard';
 import { EventItem, initialEvents } from '../data/events';
 
@@ -68,12 +75,59 @@ export default function HomeScreen() {
 const [scanned, setScanned] = useState(false);
 const [query, setQuery] = useState('');
 
+const [permission, requestPermission] =
+  useCameraPermissions();
+
+const [location, setLocation] =
+  useState<Location.LocationObject | null>(null);
+
+const [locationLoading, setLocationLoading] =
+  useState(false);
+
 const [eventFilter, setEventFilter] =
   useState<'all' | 'week' | 'mine'>('all');
 
 const [joinedEvents, setJoinedEvents] =
   useState<string[]>([]);
 
+  const getCurrentLocation = async () => {
+  setLocationLoading(true);
+
+  const { status } =
+    await Location.requestForegroundPermissionsAsync();
+
+  if (status !== 'granted') {
+    setLocationLoading(false);
+
+    Alert.alert(
+      'Location permission needed',
+      'Please allow CampusCount to access your location.'
+    );
+
+    return;
+  }
+
+  try {
+    const currentLocation =
+      await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+
+    setLocation(currentLocation);
+
+    Alert.alert(
+      'Location detected',
+      `Latitude: ${currentLocation.coords.latitude.toFixed(6)}\nLongitude: ${currentLocation.coords.longitude.toFixed(6)}`
+    );
+  } catch (error) {
+    Alert.alert(
+      'Location error',
+      'Unable to get your current location.'
+    );
+  } finally {
+    setLocationLoading(false);
+  }
+};
   const signOut = () => {
     setSignedIn(false);
     setPage('home');
@@ -267,7 +321,49 @@ const [joinedEvents, setJoinedEvents] =
     </>
   );
 
-  const scanPage = () => (
+const scanPage = () => {
+  if (!permission) {
+    return (
+      <View style={styles.centerBox}>
+        <Text style={styles.loadingText}>
+          Checking camera permission...
+        </Text>
+      </View>
+    );
+  }
+
+  if (!permission.granted) {
+    return (
+      <>
+        {header(
+          'CHECK IN',
+          'Scan to attend',
+          'Camera access is needed to scan the event QR code.'
+        )}
+
+        <View style={styles.permissionBox}>
+          <Text style={styles.permissionIcon}>
+            📷
+          </Text>
+
+          <Text style={styles.permissionTitle}>
+            Camera permission required
+          </Text>
+
+          <Text style={styles.permissionText}>
+            CampusCount needs access to your camera so you can scan an event QR code.
+          </Text>
+
+          <Action
+            title="Allow camera access"
+            onPress={requestPermission}
+          />
+        </View>
+      </>
+    );
+  }
+
+  return (
     <>
       {header(
         'CHECK IN',
@@ -276,18 +372,25 @@ const [joinedEvents, setJoinedEvents] =
       )}
 
       <View style={styles.scanCard}>
-        <View
-          style={[
-            styles.scanFrame,
-            scanned && styles.scanFrameDone,
-          ]}
-        >
-          {scanned ? (
-            <Text style={styles.scanCheck}>
-              ✓
-            </Text>
-          ) : (
-            <>
+        {!scanned ? (
+          <View style={styles.cameraContainer}>
+            <CameraView
+              style={styles.camera}
+              facing="back"
+              barcodeScannerSettings={{
+                barcodeTypes: ['qr'],
+              }}
+              onBarcodeScanned={({ data }) => {
+                setScanned(true);
+
+                Alert.alert(
+                  'QR Code scanned',
+                  `QR data: ${data}`
+                );
+              }}
+            />
+
+            <View style={styles.cameraOverlay}>
               <View
                 style={[
                   styles.corner,
@@ -316,52 +419,72 @@ const [joinedEvents, setJoinedEvents] =
                 ]}
               />
 
-              <Text style={styles.scanGlyph}>
-                ▦
+              <Text style={styles.cameraText}>
+                Place the QR code inside the frame
               </Text>
-
-              <View style={styles.scanLine} />
-            </>
-          )}
-        </View>
+            </View>
+          </View>
+        ) : (
+          <View
+            style={[
+              styles.scanFrame,
+              styles.scanFrameDone,
+            ]}
+          >
+            <Text style={styles.scanCheck}>
+              ✓
+            </Text>
+          </View>
+        )}
 
         <Text style={styles.scanHint}>
           {scanned
-            ? 'Attendance recorded!'
-            : 'Camera preview'}
+            ? 'QR code scanned successfully!'
+            : 'Ready to scan'}
         </Text>
 
         <Text style={styles.scanSub}>
           {scanned
-            ? 'You’re checked in to Campus Clean-up Drive.'
+            ? 'Attendance verification can continue.'
             : 'Align the QR code inside the frame'}
         </Text>
       </View>
 
       <View style={styles.notice}>
-        <Text style={styles.noticeIcon}>
-          ⌖
-        </Text>
+  <Text style={styles.noticeIcon}>
+    ⌖
+  </Text>
 
-        <View style={{ flex: 1 }}>
-          <Text style={styles.noticeTitle}>
-            Location verification on
-          </Text>
+  <View style={{ flex: 1 }}>
+    <Text style={styles.noticeTitle}>
+      {location
+        ? 'Location detected'
+        : 'Location verification'}
+    </Text>
 
-          <Text style={styles.noticeBody}>
-            You need to be at the event venue to check in.
-          </Text>
-        </View>
+    <Text style={styles.noticeBody}>
+      {location
+        ? `GPS: ${location.coords.latitude.toFixed(5)}, ${location.coords.longitude.toFixed(5)}`
+        : 'Your location will be checked during attendance.'}
+    </Text>
+  </View>
 
-        <Text style={styles.greenDot} />
-      </View>
+  <Text style={styles.greenDot} />
+</View>
 
-      {!scanned ? (
-        <Action
-          title="Simulate QR scan"
-          onPress={() => setScanned(true)}
-        />
-      ) : (
+<Action
+  title={
+    locationLoading
+      ? 'Getting location...'
+      : location
+      ? 'Refresh location'
+      : 'Get my location'
+  }
+  light={!!location}
+  onPress={getCurrentLocation}
+/>
+
+      {scanned && (
         <Action
           title="Scan another code"
           light
@@ -370,7 +493,8 @@ const [joinedEvents, setJoinedEvents] =
       )}
     </>
   );
-
+};
+  
   const historyPage = () => (
     <>
       {header(
@@ -2011,5 +2135,82 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 16,
     marginTop: 6,
+  },
+
+    cameraContainer: {
+    width: 230,
+    height: 230,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#000000',
+  },
+
+  camera: {
+    width: '100%',
+    height: '100%',
+  },
+
+  cameraOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  cameraText: {
+    position: 'absolute',
+    bottom: 13,
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '700',
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: 7,
+  },
+
+  permissionBox: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#ECEFEB',
+    padding: 24,
+    alignItems: 'center',
+  },
+
+  permissionIcon: {
+    fontSize: 42,
+    marginBottom: 12,
+  },
+
+  permissionTitle: {
+    color: '#18251F',
+    fontSize: 16,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+
+  permissionText: {
+    color: '#77827C',
+    fontSize: 11,
+    lineHeight: 17,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+
+  centerBox: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+
+  loadingText: {
+    color: '#77827C',
+    fontSize: 12,
   },
 });

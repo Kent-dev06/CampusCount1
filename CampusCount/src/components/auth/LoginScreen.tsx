@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -40,8 +41,9 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       return;
     }
 
-    // Temporary local login.
-    // Real authentication can be connected later.
+    // Temporary local login
+    // Real authentication can be connected later
+    // ayaw sa ni deleta na comments
     onLogin(username.trim());
   };
 
@@ -78,26 +80,34 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
               campus events.
             </Text>
           </View>
-
           <View style={styles.socialContainer}>
             <TouchableOpacity
               style={styles.facebookButton}
               activeOpacity={0.8}
               onPress={handleFacebookLogin}
             >
-              <Text style={styles.facebookIcon}>f</Text>
+              <Image
+                source={require("../../../assets/facebook.png")}
+                style={styles.facebookIcon}
+                resizeMode="contain"
+              />
 
               <Text style={styles.facebookText}>
                 Login with Facebook Account
               </Text>
             </TouchableOpacity>
 
+            {/* GOOGLE BUTTON */}
             <TouchableOpacity
               style={styles.googleButton}
               activeOpacity={0.8}
               onPress={handleGoogleLogin}
             >
-              <Text style={styles.googleIcon}>G</Text>
+              <Image
+                source={require("../../../assets/google.png")}
+                style={styles.googleIcon}
+                resizeMode="contain"
+              />
 
               <Text style={styles.googleText}>Login with Google Account</Text>
             </TouchableOpacity>
@@ -171,7 +181,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F8F6",
+    backgroundColor: "#c7c7c7",
   },
 
   scrollContent: {
@@ -229,7 +239,9 @@ const styles = StyleSheet.create({
   facebookButton: {
     height: 52,
     borderRadius: 12,
-    backgroundColor: "#1877F2",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#747775",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -237,16 +249,15 @@ const styles = StyleSheet.create({
   },
 
   facebookIcon: {
-    color: "#FFFFFF",
-    fontSize: 23,
-    fontWeight: "800",
-    marginRight: 10,
+    width: 20,
+    height: 20,
+    marginRight: 12,
   },
 
   facebookText: {
-    color: "#FFFFFF",
+    color: "#18251F",
     fontSize: 14,
-    fontWeight: "700",
+    fontWeight: "600",
   },
 
   googleButton: {
@@ -254,7 +265,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: border,
+    borderColor: "#747775",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -262,16 +273,15 @@ const styles = StyleSheet.create({
   },
 
   googleIcon: {
-    color: "#4285F4",
-    fontSize: 20,
-    fontWeight: "800",
-    marginRight: 10,
+    width: 20,
+    height: 20,
+    marginRight: 12,
   },
 
   googleText: {
-    color: ink,
+    color: "#1F1F1F",
     fontSize: 14,
-    fontWeight: "700",
+    fontWeight: "500",
   },
 
   dividerContainer: {

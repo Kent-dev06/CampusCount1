@@ -5,6 +5,8 @@ type EventCardProps = {
   item: EventItem;
   onPress: () => void;
   button?: string;
+  isBookmarked?: boolean;
+  onBookmark?: () => void;
 };
 
 const ink = '#18251F';
@@ -15,6 +17,8 @@ export default function EventCard({
   item,
   onPress,
   button = 'View details',
+  isBookmarked = false,
+  onBookmark,
 }: EventCardProps) {
   return (
     <View style={styles.eventCard}>
@@ -44,7 +48,13 @@ export default function EventCard({
           </Text>
         </View>
 
-        <Text style={styles.dots}>···</Text>
+        {onBookmark && (
+          <TouchableOpacity onPress={onBookmark} style={styles.bookmarkBtn}>
+            <Text style={{ fontSize: 18, color: isBookmarked ? '#E5A847' : '#98A29C' }}>
+              {isBookmarked ? '★' : '☆'}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={styles.eventBottom}>
@@ -112,10 +122,10 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 
-  dots: {
-    color: muted,
-    fontSize: 17,
-    marginTop: -9,
+  bookmarkBtn: {
+    padding: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   eventBottom: {
@@ -123,7 +133,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 13,
-    paddingTop: 11,
+     paddingTop: 11,
     borderTopWidth: 1,
     borderColor: '#F0F1EF',
   },

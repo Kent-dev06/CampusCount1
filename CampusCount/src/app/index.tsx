@@ -77,6 +77,17 @@ export default function HomeScreen() {
   );
 
   const [joinedEvents, setJoinedEvents] = useState<string[]>([]);
+  const [bookmarkedEvents, setBookmarkedEvents] = useState<string[]>([]);
+
+  const toggleBookmark = (title: string) => {
+  if (bookmarkedEvents.includes(title)) {
+    setBookmarkedEvents(bookmarkedEvents.filter(t => t !== title));
+  } else {
+    setBookmarkedEvents([...bookmarkedEvents, title]);
+    Alert.alert('Bookmarked', 'Added to your saved events.');
+  }
+};
+
 
   const getCurrentLocation = async () => {
     setLocationLoading(true);

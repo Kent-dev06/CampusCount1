@@ -1,4 +1,3 @@
-import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
@@ -19,7 +18,6 @@ import * as Location from "expo-location";
 import EventCard from "../components/EventCard";
 import { initialEvents, type EventItem } from "../data/events";
 import LoginScreen from "../components/auth/LoginScreen";
-import { useCampus } from "@/context/CampusContext";
 
 type Page = "home" | "scan" | "history" | "profile" | "events" | "reports";
 
@@ -53,11 +51,10 @@ function Action({
 }
 
 export default function HomeScreen() {
-  const router = useRouter();
-
   const [page, setPage] = useState<Page>("home");
-
-  const { role, name, setName, signedIn, signIn, signOut } = useCampus();
+  const [role, setRole] = useState<"Student" | "Organizer">("Student");
+  const [signedIn, setSignedIn] = useState(false);
+  const [name, setName] = useState("Alex Rivera");
 
   const [events, setEvents] = useState<EventItem[]>(initialEvents);
 
@@ -111,6 +108,15 @@ export default function HomeScreen() {
       setLocationLoading(false);
     }
   };
+  const signOut = () => {
+    setSignedIn(false);
+    setPage("home");
+  };
+
+  const signIn = () => {
+    setSignedIn(true);
+    setPage("home");
+  };
 
   const addEvent = () => {
     setEvents([
@@ -152,7 +158,7 @@ export default function HomeScreen() {
 
         <TouchableOpacity
           style={styles.avatar}
-          onPress={() => router.replace("/profile")}
+          onPress={() => setPage("profile")}
         >
           <Text style={styles.avatarText}>AR</Text>
         </TouchableOpacity>
@@ -171,7 +177,8 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={styles.heroButton}
             onPress={() => {
-              router.push("/check-in");
+              setScanned(false);
+              setPage("scan");
             }}
           >
             <Text style={styles.heroButtonText}>▦ Scan attendance →</Text>
@@ -209,7 +216,7 @@ export default function HomeScreen() {
       <View style={styles.sectionRow}>
         <Label>UP NEXT</Label>
 
-        <TouchableOpacity onPress={() => router.push("/events")}>
+        <TouchableOpacity onPress={() => setPage("events")}>
           <Text style={styles.link}>See all →</Text>
         </TouchableOpacity>
       </View>
@@ -526,6 +533,17 @@ export default function HomeScreen() {
         <Text style={styles.settingName}>Event notifications</Text>
 
         <Text style={styles.settingValue}>On ›</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.settingRow}
+        onPress={() => setRole(role === "Student" ? "Organizer" : "Student")}
+      >
+        <Text style={styles.settingIcon}>⇄</Text>
+
+        <Text style={styles.settingName}>Switch account view</Text>
+
+        <Text style={styles.settingValue}>{role} ›</Text>
       </TouchableOpacity>
 
       <Action title="Sign out" light onPress={signOut} />
@@ -845,14 +863,9 @@ export default function HomeScreen() {
   if (!signedIn) {
     return (
       <LoginScreen
-        onLogin={(loggedInName, loggedInRole) => {
-          signIn(loggedInName, loggedInRole);
-
-          router.replace(
-            loggedInRole === "Organizer"
-              ? "/(tabs)/organizer-home"
-              : "/(tabs)/home",
-          );
+        onLogin={(loggedInName) => {
+          setName(loggedInName);
+          signIn();
         }}
       />
     );
@@ -886,43 +899,7 @@ export default function HomeScreen() {
           <TouchableOpacity
             key={item.id}
             style={styles.navItem}
-            onPress={() => {
-              if (item.id === "home") {
-                if (role === "Organizer") {
-                  router.push("/organizer-home");
-                } else {
-                  router.push("/home");
-                }
-                return;
-              }
-
-              if (item.id === "events") {
-                router.push("/events");
-                return;
-              }
-
-              if (item.id === "scan") {
-                router.push("/check-in");
-                return;
-              }
-
-              if (item.id === "history") {
-                router.push("/history");
-                return;
-              }
-
-              if (item.id === "profile") {
-                router.push("/profile");
-                return;
-              }
-
-              if (item.id === "reports") {
-                router.push("/reports");
-                return;
-              }
-
-              setPage(item.id);
-            }}
+            onPress={() => setPage(item.id)}
           >
             <Text
               style={[styles.navIcon, page === item.id && styles.navActive]}

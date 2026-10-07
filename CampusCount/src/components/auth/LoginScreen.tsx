@@ -13,7 +13,7 @@ import {
 } from "react-native";
 
 type LoginScreenProps = {
-  onLogin: (name: string) => void;
+  onLogin: (name: string, role: "Student" | "Organizer") => void;
 };
 
 const green = "#176B4A";
@@ -27,12 +27,9 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username.trim()) {
-      Alert.alert(
-        "Username required",
-        "Please enter your username or email address.",
-      );
+      Alert.alert("School email required", "Please enter your school email");
       return;
     }
 
@@ -41,10 +38,37 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       return;
     }
 
-    // Temporary local login
-    // Real authentication can be connected later
-    // ayaw sa ni deleta na comments
-    onLogin(username.trim());
+    try {
+      const response = await fetch("http://192.168.1.8:3000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: username.trim(),
+          password: password.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert(
+          "Login failed",
+          data.message || "Invalid email or password.",
+        );
+        return;
+      }
+
+      onLogin(data.user.name, data.user.role);
+    } catch (error) {
+      console.error(error);
+
+      Alert.alert(
+        "Connection error",
+        "Unable to connect to the CampusCount server.",
+      );
+    }
   };
 
   const handleFacebookLogin = () => {
@@ -58,6 +82,13 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     Alert.alert(
       "Google Login",
       "Google authentication will be connected in a later version.",
+    );
+  };
+
+  const handleForgotPassword = () => {
+    Alert.alert(
+      "Forgot Password?",
+      "Password recovery will be connected in a later version. Please contact your school administrator for assistance.",
     );
   };
 
@@ -80,6 +111,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
               campus events.
             </Text>
           </View>
+
           <View style={styles.socialContainer}>
             <TouchableOpacity
               style={styles.facebookButton}
@@ -97,7 +129,6 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
               </Text>
             </TouchableOpacity>
 
-            {/* GOOGLE BUTTON */}
             <TouchableOpacity
               style={styles.googleButton}
               activeOpacity={0.8}
@@ -122,11 +153,11 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           </View>
 
           <View style={styles.form}>
-            <Text style={styles.label}>Username or Email Address</Text>
+            <Text style={styles.label}>School Email</Text>
 
             <TextInput
               style={styles.input}
-              placeholder="Enter your username or email"
+              placeholder="username@campus.edu"
               placeholderTextColor="#9AA59F"
               value={username}
               onChangeText={setUsername}
@@ -158,6 +189,14 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                 </Text>
               </TouchableOpacity>
             </View>
+
+            <TouchableOpacity
+              style={styles.forgotButton}
+              onPress={handleForgotPassword}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.forgotText}>Forgot Password?</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.loginButton}
@@ -355,13 +394,25 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
 
+  forgotButton: {
+    alignSelf: "flex-start",
+    marginTop: 2,
+    paddingVertical: 4,
+  },
+
+  forgotText: {
+    color: green,
+    fontSize: 13,
+    fontWeight: "700",
+  },
+
   loginButton: {
     height: 52,
     borderRadius: 12,
     backgroundColor: green,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 14,
+    marginTop: 10,
   },
 
   loginButtonText: {

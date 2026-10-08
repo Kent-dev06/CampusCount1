@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useCampus } from "@/context/CampusContext";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import * as Location from "expo-location";
+import { useRef, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -7,8 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { CameraView, useCameraPermissions } from "expo-camera";
-import * as Location from "expo-location";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ink = "#18251F";
@@ -42,11 +43,18 @@ function Action({
 
 export default function CheckInScreen() {
   const insets = useSafeAreaInsets();
+
+  const { name, addAttendance } = useCampus();
+
   const [scanned, setScanned] = useState(false);
+  const scanLocked = useRef(false);
+
   const [permission, requestPermission] = useCameraPermissions();
+
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null,
   );
+
   const [locationLoading, setLocationLoading] = useState(false);
 
   const getCurrentLocation = async () => {
@@ -136,50 +144,96 @@ export default function CheckInScreen() {
         </Text>
       </View>
 
+      {/* QR SCANNER */}
       <View style={styles.scanCard}>
-        {!scanned ? (
-          <View style={styles.cameraContainer}>
-            <CameraView
-              style={styles.camera}
-              facing="back"
-              barcodeScannerSettings={{
-                barcodeTypes: ["qr"],
-              }}
-              onBarcodeScanned={({ data }) => {
-                setScanned(true);
+        <View style={styles.cameraContainer}>
+          <CameraView
+            style={styles.camera}
+            facing="back"
+            barcodeScannerSettings={{
+              barcodeTypes: ["qr"],
+            }}
+            onBarcodeScanned={
+              scanned
+                ? undefined
+                : ({ data }) => {
+                    // Prevent the same QR from being detected
+                    // multiple times.
+                    if (scanLocked.current) {
+                      return;
+                    }
 
-                Alert.alert("QR Code scanned", `QR data: ${data}`);
-              }}
-            />
+                    scanLocked.current = true;
+                    setScanned(true);
 
-            <View style={styles.cameraOverlay}>
-              <View style={[styles.corner, styles.cornerTL]} />
-              <View style={[styles.corner, styles.cornerTR]} />
-              <View style={[styles.corner, styles.cornerBL]} />
-              <View style={[styles.corner, styles.cornerBR]} />
+                    // Location is required before attendance.
+                    if (!location) {
+                      Alert.alert(
+                        "Location required",
+                        "Please get your location before checking in.",
+                      );
 
-              <Text style={styles.cameraText}>
-                Place the QR code inside the frame
-              </Text>
-            </View>
+                      scanLocked.current = false;
+                      setScanned(false);
+
+                      return;
+                    }
+
+                    const now = new Date();
+
+                    // Save attendance.
+                    addAttendance({
+                      id: `${Date.now()}`,
+                      eventName: data,
+                      venue: "Scanned Event",
+                      date: now.toISOString(),
+                      time: now.toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      }),
+                      status: "PRESENT",
+                      latitude: location.coords.latitude,
+                      longitude: location.coords.longitude,
+                    });
+
+                    Alert.alert(
+                      "Check-in successful",
+                      `${name}, your attendance has been recorded.`,
+                    );
+                  }
+            }
+          />
+
+          {/* Scanner frame */}
+          <View style={styles.cameraOverlay}>
+            <View style={[styles.corner, styles.cornerTL]} />
+
+            <View style={[styles.corner, styles.cornerTR]} />
+
+            <View style={[styles.corner, styles.cornerBL]} />
+
+            <View style={[styles.corner, styles.cornerBR]} />
+
+            <Text style={styles.cameraText}>
+              {scanned
+                ? "QR code scanned successfully"
+                : "Place the QR code inside the frame"}
+            </Text>
           </View>
-        ) : (
-          <View style={[styles.scanFrame, styles.scanFrameDone]}>
-            <Text style={styles.scanCheck}>✓</Text>
-          </View>
-        )}
+        </View>
 
         <Text style={styles.scanHint}>
-          {scanned ? "QR code scanned successfully!" : "Ready to scan"}
+          {scanned ? "Attendance recorded" : "Ready to scan"}
         </Text>
 
         <Text style={styles.scanSub}>
           {scanned
-            ? "Attendance verification can continue."
+            ? "Tap Scan another code to scan again."
             : "Align the QR code inside the frame"}
         </Text>
       </View>
 
+      {/* LOCATION */}
       <View style={styles.notice}>
         <Text style={styles.noticeIcon}>⌖</Text>
 
@@ -190,7 +244,9 @@ export default function CheckInScreen() {
 
           <Text style={styles.noticeBody}>
             {location
-              ? `GPS: ${location.coords.latitude.toFixed(5)}, ${location.coords.longitude.toFixed(5)}`
+              ? `GPS: ${location.coords.latitude.toFixed(
+                  5,
+                )}, ${location.coords.longitude.toFixed(5)}`
               : "Your location will be checked during attendance."}
           </Text>
         </View>
@@ -198,6 +254,7 @@ export default function CheckInScreen() {
         <Text style={styles.greenDot} />
       </View>
 
+      {/* LOCATION BUTTON */}
       <Action
         title={
           locationLoading
@@ -210,11 +267,18 @@ export default function CheckInScreen() {
         onPress={getCurrentLocation}
       />
 
+      {/* SCAN AGAIN BUTTON */}
       {scanned && (
         <Action
           title="Scan another code"
           light
-          onPress={() => setScanned(false)}
+          onPress={() => {
+            // Unlock scanner.
+            scanLocked.current = false;
+
+            // Show camera as ready to scan again.
+            setScanned(false);
+          }}
         />
       )}
     </ScrollView>
@@ -390,26 +454,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  scanFrame: {
-    width: 220,
-    height: 220,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#E7F5EC",
-  },
-
-  scanFrameDone: {
-    borderWidth: 2,
-    borderColor: green,
-  },
-
-  scanCheck: {
-    color: green,
-    fontSize: 64,
-    fontWeight: "800",
-  },
-
   scanHint: {
     color: ink,
     fontSize: 17,
@@ -421,6 +465,7 @@ const styles = StyleSheet.create({
     color: muted,
     fontSize: 13,
     marginTop: 5,
+    textAlign: "center",
   },
 
   notice: {

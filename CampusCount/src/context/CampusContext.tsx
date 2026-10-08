@@ -1,6 +1,6 @@
+import { initialEvents, type EventItem } from "@/data/events";
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { Alert } from "react-native";
-import { initialEvents, type EventItem } from "@/data/events";
 
 type Role = "Student" | "Organizer";
 
@@ -27,6 +27,20 @@ type CampusContextType = {
 
   scanned: boolean;
   setScanned: (scanned: boolean) => void;
+
+  attendance: AttendanceRecord[];
+  addAttendance: (record: AttendanceRecord) => void;
+};
+
+export type AttendanceRecord = {
+  id: string;
+  eventName: string;
+  venue: string;
+  date: string;
+  time: string;
+  status: "PRESENT";
+  latitude: number;
+  longitude: number;
 };
 
 const CampusContext = createContext<CampusContextType | undefined>(undefined);
@@ -39,6 +53,7 @@ export function CampusProvider({ children }: { children: ReactNode }) {
   const [joinedEvents, setJoinedEvents] = useState<string[]>([]);
   const [eventFilter, setEventFilter] = useState<EventFilter>("all");
   const [scanned, setScanned] = useState(false);
+  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
 
   const addEvent = () => {
     const newEvent: EventItem = {
@@ -54,6 +69,10 @@ export function CampusProvider({ children }: { children: ReactNode }) {
     setEvents((current) => [newEvent, ...current]);
 
     Alert.alert("Event created", "Your new event is now on the event list.");
+  };
+
+  const addAttendance = (record: AttendanceRecord) => {
+    setAttendance((current) => [record, ...current]);
   };
 
   const registerForEvent = (event: EventItem) => {
@@ -103,6 +122,8 @@ export function CampusProvider({ children }: { children: ReactNode }) {
         setEventFilter,
         scanned,
         setScanned,
+        attendance,
+        addAttendance,
       }}
     >
       {children}

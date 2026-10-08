@@ -156,7 +156,7 @@ export default function CheckInScreen() {
             onBarcodeScanned={
               scanned
                 ? undefined
-                : ({ data }) => {
+                : async ({ data }) => {
                     // Prevent the same QR from being detected
                     // multiple times.
                     if (scanLocked.current) {
@@ -182,6 +182,30 @@ export default function CheckInScreen() {
                     const now = new Date();
 
                     // Save attendance.
+                    let locationName = "Location verified";
+
+                    try {
+                      const addresses = await Location.reverseGeocodeAsync({
+                        latitude: location.coords.latitude,
+                        longitude: location.coords.longitude,
+                      });
+
+                      if (addresses.length > 0) {
+                        const address = addresses[0];
+
+                        const parts = [
+                          address.name,
+                          address.street,
+                          address.city,
+                          address.region,
+                        ].filter(Boolean);
+
+                        locationName = parts.join(", ");
+                      }
+                    } catch (error) {
+                      console.log("Unable to get readable location:", error);
+                    }
+
                     addAttendance({
                       id: `${Date.now()}`,
                       eventName: data,
@@ -194,6 +218,7 @@ export default function CheckInScreen() {
                       status: "PRESENT",
                       latitude: location.coords.latitude,
                       longitude: location.coords.longitude,
+                      locationName,
                     });
 
                     Alert.alert(

@@ -1,5 +1,12 @@
 import { useCampus } from "@/context/CampusContext";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ink = "#172019";
@@ -84,6 +91,20 @@ export default function HistoryScreen() {
                 <Text style={styles.historyVenue}>
                   {record.venue} · {record.time}
                 </Text>
+
+                <Text style={styles.locationText}>
+                  📍 {record.locationName}
+                </Text>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${record.latitude},${record.longitude}`;
+
+                    Linking.openURL(mapUrl);
+                  }}
+                >
+                  <Text style={styles.viewLocation}>View Location</Text>
+                </TouchableOpacity>
               </View>
 
               {/* STATUS */}
@@ -226,6 +247,19 @@ const styles = StyleSheet.create({
     color: muted,
     fontSize: 13,
     textAlign: "center",
+    marginTop: 6,
+  },
+
+  locationText: {
+    color: muted,
+    fontSize: 12,
+    marginTop: 5,
+  },
+
+  viewLocation: {
+    color: green,
+    fontSize: 12,
+    fontWeight: "800",
     marginTop: 6,
   },
 });

@@ -41,6 +41,7 @@ export type AttendanceRecord = {
   status: "PRESENT";
   latitude: number;
   longitude: number;
+  locationName: string;
 };
 
 const CampusContext = createContext<CampusContextType | undefined>(undefined);

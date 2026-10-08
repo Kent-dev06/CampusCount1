@@ -72,9 +72,7 @@ export default function HomeScreen() {
 
   const [locationLoading, setLocationLoading] = useState(false);
 
-  const [eventFilter, setEventFilter] = useState<"all" | "week" | "mine">(
-    "all",
-  );
+  const [eventFilter, setEventFilter] = useState<"all" | "week" | "mine" | "bookmarks">("all");
 
   const [joinedEvents, setJoinedEvents] = useState<string[]>([]);
   const [bookmarkedEvents, setBookmarkedEvents] = useState<string[]>([]);
@@ -626,6 +624,12 @@ export default function HomeScreen() {
               }
             >
               My events
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => setEventFilter("bookmarks")}>
+            <Text style={eventFilter === "bookmarks" ? styles.filterActive : styles.filter}>
+              Bookmarks 
             </Text>
           </TouchableOpacity>
         </View>

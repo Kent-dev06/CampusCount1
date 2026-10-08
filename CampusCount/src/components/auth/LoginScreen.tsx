@@ -40,7 +40,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
 
     try {
       const response = await fetch(
-        "https://meanwhile-shall-com-testing.trycloudflare.com/login",
+        "https://campuscountapi.onrender.com/login",
         {
           method: "POST",
           headers: {

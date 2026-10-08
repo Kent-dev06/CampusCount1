@@ -39,16 +39,19 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     }
 
     try {
-      const response = await fetch("http://192.168.1.8:3000/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        "https://meanwhile-shall-com-testing.trycloudflare.com/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: username.trim(),
+            password: password.trim(),
+          }),
         },
-        body: JSON.stringify({
-          email: username.trim(),
-          password: password.trim(),
-        }),
-      });
+      );
 
       const data = await response.json();
 

@@ -1,5 +1,8 @@
-import { useMemo, useState } from "react";
+import EventCard from "@/components/EventCard";
+import { useCampus } from "@/context/CampusContext";
+import { type EventItem } from "@/data/events";
 import { useRouter } from "expo-router";
+import { useMemo, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -9,9 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import EventCard from "@/components/EventCard";
-import { type EventItem } from "@/data/events";
-import { useCampus } from "@/context/CampusContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ink = "#18251F";
@@ -48,7 +48,7 @@ export default function EventsScreen() {
         }
 
         if (eventFilter === "mine") {
-          return joinedEvents.includes(event.title);
+          return joinedEvents.includes(event.id);
         }
 
         const currentYear = new Date().getFullYear();
@@ -64,7 +64,7 @@ export default function EventsScreen() {
   }, [events, query, eventFilter, joinedEvents]);
 
   const handleRegister = (event: EventItem) => {
-    if (joinedEvents.includes(event.title)) {
+    if (joinedEvents.includes(event.id)) {
       Alert.alert(
         "Already registered",
         `You are already registered for ${event.title}.`,
@@ -143,7 +143,7 @@ export default function EventsScreen() {
             paddingHorizontal: 18,
             marginBottom: 28,
           }}
-          onPress={addEvent}
+          onPress={() => router.push("/create-event" as any)}
         >
           <Text
             style={{
@@ -157,7 +157,7 @@ export default function EventsScreen() {
         </TouchableOpacity>
 
         <View style={styles.sectionRow}>
-          <Label>EVENT CALENDAR</Label>
+          <Label>EVEwwwwwwwwT CALENDAR</Label>
 
           <Text style={styles.countPill}>
             {events.length} {events.length === 1 ? "event" : "events"}
@@ -263,7 +263,7 @@ export default function EventsScreen() {
             key={`${event.title}-${i}`}
             item={event}
             onPress={() => handleRegister(event)}
-            button={joinedEvents.includes(event.title) ? "Joined" : "Register"}
+            button={joinedEvents.includes(event.id) ? "Joined" : "Register"}
           />
         ))
       )}

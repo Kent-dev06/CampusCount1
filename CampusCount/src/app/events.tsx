@@ -1,5 +1,8 @@
-import { useMemo, useState } from "react";
+import EventCard from "@/components/EventCard";
+import { useCampus } from "@/context/CampusContext";
+import { type EventItem } from "@/data/events";
 import { useRouter } from "expo-router";
+import { useMemo, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -9,9 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import EventCard from "@/components/EventCard";
-import { type EventItem } from "@/data/events";
-import { useCampus } from "@/context/CampusContext";
 
 const ink = "#18251F";
 const green = "#176B4A";
@@ -120,7 +120,7 @@ export default function EventsScreen() {
             paddingHorizontal: 18,
             marginBottom: 28,
           }}
-          onPress={addEvent}
+          onPress={() => router.push("/create-event" as any)}
         >
           <Text
             style={{

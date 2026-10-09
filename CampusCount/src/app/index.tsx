@@ -16,10 +16,10 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 
 import * as Location from "expo-location";
 
+import { useCampus } from "@/context/CampusContext";
+import LoginScreen from "../components/auth/LoginScreen";
 import EventCard from "../components/EventCard";
 import { initialEvents, type EventItem } from "../data/events";
-import LoginScreen from "../components/auth/LoginScreen";
-import { useCampus } from "@/context/CampusContext";
 
 type Page = "home" | "scan" | "history" | "profile" | "events" | "reports";
 
@@ -122,6 +122,10 @@ export default function HomeScreen() {
         kind: "CAMPUS",
         color: "#E7E8FF",
         attending: 0,
+        id: "event-demo",
+        latitude: 7.4479,
+        longitude: 125.8072,
+        radius: 100,
       },
       ...events,
     ]);

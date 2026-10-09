@@ -6,6 +6,32 @@ type Role = "Student" | "Organizer";
 
 type EventFilter = "all" | "week" | "mine";
 
+export type AttendanceRecord = {
+  id: string;
+  eventId?: string;
+  eventName: string;
+  venue: string;
+  date: string;
+  time: string;
+  status: "PRESENT";
+  latitude: number;
+  longitude: number;
+  locationName: string;
+};
+
+type NewEventData = {
+  title: string;
+  date: string;
+  time: string;
+  place: string;
+  kind: string;
+  color: string;
+  attending: number;
+  latitude: number;
+  longitude: number;
+  radius: number;
+};
+
 type CampusContextType = {
   signedIn: boolean;
   signIn: (name: string, role: Role) => void;
@@ -17,7 +43,7 @@ type CampusContextType = {
 
   events: EventItem[];
   setEvents: React.Dispatch<React.SetStateAction<EventItem[]>>;
-  addEvent: () => void;
+  addEvent: (event: NewEventData) => void;
 
   joinedEvents: string[];
   registerForEvent: (event: EventItem) => void;
@@ -32,44 +58,43 @@ type CampusContextType = {
   addAttendance: (record: AttendanceRecord) => void;
 };
 
-export type AttendanceRecord = {
-  id: string;
-  eventName: string;
-  venue: string;
-  date: string;
-  time: string;
-  status: "PRESENT";
-  latitude: number;
-  longitude: number;
-  locationName: string;
-};
-
 const CampusContext = createContext<CampusContextType | undefined>(undefined);
 
 export function CampusProvider({ children }: { children: ReactNode }) {
   const [signedIn, setSignedIn] = useState(false);
   const [role, setRole] = useState<Role>("Student");
   const [name, setName] = useState("Alex Rivera");
+
   const [events, setEvents] = useState<EventItem[]>(initialEvents);
+
   const [joinedEvents, setJoinedEvents] = useState<string[]>([]);
+
   const [eventFilter, setEventFilter] = useState<EventFilter>("all");
+
   const [scanned, setScanned] = useState(false);
+
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
 
-  const addEvent = () => {
+  const addEvent = (event: NewEventData) => {
     const newEvent: EventItem = {
-      title: "New campus gathering",
-      date: "OCT 18",
-      time: "10:00 AM",
-      place: "Student Center",
-      kind: "CAMPUS",
-      color: "#E7E8FF",
-      attending: 0,
+      id: `event-${Date.now()}`,
+      title: event.title,
+      date: event.date,
+      time: event.time,
+      place: event.place,
+      kind: event.kind,
+      color: event.color,
+      attending: event.attending,
+      latitude: event.latitude,
+      longitude: event.longitude,
+      radius: event.radius,
     };
-
     setEvents((current) => [newEvent, ...current]);
 
-    Alert.alert("Event created", "Your new event is now on the event list.");
+    Alert.alert(
+      "Event created",
+      `${newEvent.title} has been added to the event calendar.`,
+    );
   };
 
   const addAttendance = (record: AttendanceRecord) => {
@@ -77,7 +102,7 @@ export function CampusProvider({ children }: { children: ReactNode }) {
   };
 
   const registerForEvent = (event: EventItem) => {
-    if (joinedEvents.includes(event.title)) {
+    if (joinedEvents.includes(event.id)) {
       Alert.alert(
         "Already registered",
         `You are already registered for ${event.title}.`,
@@ -85,7 +110,7 @@ export function CampusProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    setJoinedEvents((current) => [...current, event.title]);
+    setJoinedEvents((current) => [...current, event.id]);
 
     Alert.alert(
       "Registration successful",

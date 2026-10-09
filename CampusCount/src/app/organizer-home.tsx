@@ -1,3 +1,6 @@
+import EventCard from "@/components/EventCard";
+import { useCampus } from "@/context/CampusContext";
+import { useRouter } from "expo-router";
 import {
   Alert,
   ScrollView,
@@ -6,9 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import EventCard from "@/components/EventCard";
-import { useCampus } from "@/context/CampusContext";
 
 const ink = "#18251F";
 const green = "#176B4A";
@@ -68,7 +68,10 @@ export default function OrganizerHomeScreen() {
         <Text style={styles.orgDecoration}>✳</Text>
       </View>
 
-      <TouchableOpacity style={styles.action} onPress={addEvent}>
+      <TouchableOpacity
+        style={styles.action}
+        onPress={() => router.push("/create-event" as any)}
+      >
         <Text style={styles.actionText}>＋ Create a new event</Text>
       </TouchableOpacity>
 

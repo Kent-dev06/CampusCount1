@@ -30,7 +30,6 @@ export default function EventsScreen() {
     eventFilter,
     setEventFilter,
     role,
-    addEvent,
   } = useCampus();
 
   const [query, setQuery] = useState("");

@@ -20,7 +20,7 @@ function Label({ children }: { children: React.ReactNode }) {
 
 export default function OrganizerHomeScreen() {
   const router = useRouter();
-  const { events, addEvent, name } = useCampus();
+  const { events, name } = useCampus();
 
   const initials = name
     .split(" ")

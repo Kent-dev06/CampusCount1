@@ -32,7 +32,6 @@ export default function EventsScreen() {
     eventFilter,
     setEventFilter,
     role,
-    addEvent,
   } = useCampus();
 
   const [query, setQuery] = useState("");
@@ -157,7 +156,7 @@ export default function EventsScreen() {
         </TouchableOpacity>
 
         <View style={styles.sectionRow}>
-          <Label>EVEwwwwwwwwT CALENDAR</Label>
+          <Label>EVENT CALENDAR</Label>
 
           <Text style={styles.countPill}>
             {events.length} {events.length === 1 ? "event" : "events"}

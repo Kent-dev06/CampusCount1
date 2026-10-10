@@ -105,7 +105,7 @@ export default function HomeScreen() {
         "Location detected",
         `Latitude: ${currentLocation.coords.latitude.toFixed(6)}\nLongitude: ${currentLocation.coords.longitude.toFixed(6)}`,
       );
-    } catch (error) {
+    } catch {
       Alert.alert("Location error", "Unable to get your current location.");
     } finally {
       setLocationLoading(false);

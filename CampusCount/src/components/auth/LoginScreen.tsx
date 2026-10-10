@@ -211,8 +211,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           </View>
 
           <Text style={styles.helpText}>
-            Don't have an account? Please contact your school administrator for
-            assistance.
+            Don&apos;t have an account? Please contact your school administrator
+            for assistance.
           </Text>
         </View>
       </ScrollView>

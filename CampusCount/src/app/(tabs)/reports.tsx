@@ -1,3 +1,4 @@
+import { useCampus } from "@/context/CampusContext";
 import {
   Alert,
   ScrollView,
@@ -6,7 +7,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useCampus } from "@/context/CampusContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ink = "#18251F";
@@ -19,7 +19,73 @@ function Label({ children }: { children: React.ReactNode }) {
 
 export default function ReportsScreen() {
   const insets = useSafeAreaInsets();
-  const { events } = useCampus();
+  const { events, attendance } = useCampus();
+
+  async function exportAttendanceCSV() {
+    try {
+      const headers = [
+        "Event ID",
+        "Event Name",
+        "Venue",
+        "Date",
+        "Time",
+        "Status",
+        "Latitude",
+        "Longitude",
+        "Location Name",
+      ];
+
+      const rows = attendance.map((record) => {
+        const item = record as unknown as Record<string, unknown>;
+
+        return [
+          item["eventId"] ?? item["id"],
+          item["eventName"] ?? item["title"],
+          item["venue"] ?? item["place"],
+          item["date"],
+          item["time"],
+          item["status"],
+          item["latitude"],
+          item["longitude"],
+          item["locationName"],
+        ]
+          .map((value) => {
+            const text = value == null ? "" : String(value);
+            return `"${text.replace(/"/g, '""')}"`;
+          })
+          .join(",");
+      });
+
+      const csvContent = [headers.join(","), ...rows].join("\r\n");
+
+      const FileSystem = await import("expo-file-system/legacy");
+      const Sharing = await import("expo-sharing");
+
+      const directory = FileSystem.cacheDirectory;
+
+      if (!directory) {
+        throw new Error("File storage is unavailable.");
+      }
+
+      const fileUri = `${directory}CampusCount_Attendance.csv`;
+
+      await FileSystem.writeAsStringAsync(fileUri, csvContent, {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: "text/csv",
+          dialogTitle: "Export attendance CSV",
+        });
+      } else {
+        Alert.alert("Sharing unavailable", "Unable to open the share menu.");
+      }
+    } catch (error) {
+      console.error("CSV export error:", error);
+      Alert.alert("Export failed", "Could not export the attendance CSV.");
+    }
+  }
 
   return (
     <ScrollView
@@ -83,12 +149,7 @@ export default function ReportsScreen() {
 
       <TouchableOpacity
         style={styles.exportButton}
-        onPress={() =>
-          Alert.alert(
-            "Report ready",
-            "Your attendance report is ready to export.",
-          )
-        }
+        onPress={exportAttendanceCSV}
       >
         <Text style={styles.exportButtonText}>Export attendance CSV</Text>
       </TouchableOpacity>

@@ -4,7 +4,7 @@ import { Alert } from "react-native";
 
 type Role = "Student" | "Organizer";
 
-type EventFilter = "all" | "week" | "mine";
+export type EventFilter = "all" | "week" | "mine" | "bookmarks";
 
 export type AttendanceRecord = {
   id: string;
@@ -48,6 +48,9 @@ type CampusContextType = {
   joinedEvents: string[];
   registerForEvent: (event: EventItem) => void;
 
+  bookmarkedEvents: string[];
+  toggleBookmark: (eventId: string) => void;
+
   eventFilter: EventFilter;
   setEventFilter: (filter: EventFilter) => void;
 
@@ -66,14 +69,21 @@ export function CampusProvider({ children }: { children: ReactNode }) {
   const [name, setName] = useState("Alex Rivera");
 
   const [events, setEvents] = useState<EventItem[]>(initialEvents);
-
   const [joinedEvents, setJoinedEvents] = useState<string[]>([]);
 
+  const [bookmarkedEvents, setBookmarkedEvents] = useState<string[]>([]);
+
   const [eventFilter, setEventFilter] = useState<EventFilter>("all");
-
   const [scanned, setScanned] = useState(false);
-
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
+
+  const toggleBookmark = (eventId: string) => {
+    setBookmarkedEvents((current) =>
+      current.includes(eventId)
+        ? current.filter((id) => id !== eventId)
+        : [...current, eventId]
+    );
+  };
 
   const addEvent = (event: NewEventData) => {
     const newEvent: EventItem = {
@@ -144,6 +154,8 @@ export function CampusProvider({ children }: { children: ReactNode }) {
         addEvent,
         joinedEvents,
         registerForEvent,
+        bookmarkedEvents, 
+        toggleBookmark,    
         eventFilter,
         setEventFilter,
         scanned,

@@ -1,5 +1,6 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import type { EventItem } from '../data/events';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { type EventItem } from "@/data/events";
 
 type EventCardProps = {
   item: EventItem;
@@ -9,154 +10,104 @@ type EventCardProps = {
   onBookmark?: () => void;
 };
 
-const ink = '#18251F';
-const green = '#176B4A';
-const muted = '#77827C';
-
 export default function EventCard({
   item,
   onPress,
-  button = 'View details',
+  button = "Register",
   isBookmarked = false,
   onBookmark,
 }: EventCardProps) {
   return (
-    <View style={styles.eventCard}>
-      <View style={styles.eventTop}>
-        <View
-          style={[
-            styles.dateBox,
-            { backgroundColor: item.color },
-          ]}
+    <View style={styles.card}>
+      {/* Top Header Row with Date Badge & Bookmark Star */}
+      <View style={styles.cardHeader}>
+        <View style={styles.dateBadge}>
+          <Text style={styles.dateText}>{item.date}</Text>
+        </View>
+
+        <TouchableOpacity
+          onPress={onBookmark}
+          style={styles.bookmarkButton}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          activeOpacity={0.7}
         >
-          <Text style={styles.dateText}>
-            {item.date.split(' ')[0]}
-          </Text>
-
-          <Text style={styles.dateDay}>
-            {item.date.split(' ')[1]}
-          </Text>
-        </View>
-
-        <View style={{ flex: 1 }}>
-          <Text style={styles.eventTitle}>
-            {item.title}
-          </Text>
-
-          <Text style={styles.eventMeta}>
-            {item.time} · {item.place}
-          </Text>
-        </View>
-
-        <TouchableOpacity onPress={onBookmark} style={styles.bookmarkButton}>
-          <Text style={[styles.star, isBookmarked && styles.bookmarkedStar]}>
-            {isBookmarked ? '★' : '☆'}
+          <Text style={[styles.starIcon, isBookmarked && styles.bookmarkedStar]}>
+            {isBookmarked ? "★" : "☆"}
           </Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.eventBottom}>
-        <Text style={styles.tag}>
-          {item.kind}
-        </Text>
+      {/* Event Details */}
+      <Text style={styles.title}>{item.title}</Text>
+      <Text style={styles.place}>{item.place}</Text>
 
-        <TouchableOpacity onPress={onPress}>
-          <Text style={styles.link}>
-            {button} →
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {/* Action Button */}
+      <TouchableOpacity style={styles.actionButton} onPress={onPress}>
+        <Text style={styles.actionButtonText}>{button}</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  eventCard: {
-    backgroundColor: '#FFFFFF',
-    padding: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#ECEFEB',
-    marginBottom: 10,
-  },
-
-  eventTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-
-  dateBox: {
-    width: 45,
-    height: 48,
+  card: {
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  dateBadge: {
+    backgroundColor: "#E6F4EA",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
   dateText: {
-    color: ink,
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 0.7,
+    color: "#137333",
+    fontSize: 12,
+    fontWeight: "600",
   },
-
-  dateDay: {
-    color: ink,
-    fontSize: 17,
-    fontWeight: '800',
-    marginTop: 1,
-  },
-
-  eventTitle: {
-    color: ink,
-    fontSize: 13,
-    fontWeight: '800',
-  },
-
-  eventMeta: {
-    color: muted,
-    fontSize: 10,
-    marginTop: 5,
-  },
-
   bookmarkButton: {
     padding: 4,
   },
-
-  star: {
-    fontSize: 20,
-    color: muted,
+  starIcon: {
+    fontSize: 22,
+    color: "#77827C",
   },
-
   bookmarkedStar: {
-    color: '#E5A847',
+    color: "#F59E0B",
   },
-
-  eventBottom: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 13,
-    paddingTop: 11,
-    borderTopWidth: 1,
-    borderColor: '#F0F1EF',
+  title: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#202124",
+    marginBottom: 4,
   },
-
-  tag: {
-    color: green,
-    backgroundColor: '#E9F4EC',
-    paddingVertical: 5,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    fontSize: 8,
-    fontWeight: '800',
-    letterSpacing: 0.6,
+  place: {
+    fontSize: 14,
+    color: "#5F6368",
+    marginBottom: 12,
   },
-
-  link: {
-    color: green,
-    fontWeight: '800',
-    fontSize: 11,
+  actionButton: {
+    backgroundColor: "#1A73E8",
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  actionButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 14,
   },
 });

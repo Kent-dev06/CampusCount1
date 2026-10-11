@@ -72,20 +72,11 @@ export default function HomeScreen() {
 
   const [locationLoading, setLocationLoading] = useState(false);
 
-  const [eventFilter, setEventFilter] = useState<
-    "all" | "week" | "mine" | "bookmarks"
-  >("all");
+  const [eventFilter, setEventFilter] = useState<"all" | "week" | "mine">(
+    "all",
+  );
 
   const [joinedEvents, setJoinedEvents] = useState<string[]>([]);
-  const [bookmarkedEvents, setBookmarkedEvents] = useState<string[]>([]);
-
-  const toggleBookmark = (eventTitle: string) => {
-    if (bookmarkedEvents.includes(eventTitle)) {
-      setBookmarkedEvents(bookmarkedEvents.filter((t) => t !== eventTitle));
-    } else {
-      setBookmarkedEvents([...bookmarkedEvents, eventTitle]);
-    }
-  };
 
   const getCurrentLocation = async () => {
     setLocationLoading(true);
@@ -238,8 +229,6 @@ export default function HomeScreen() {
             )
           }
           button="Details"
-          isBookmarked={bookmarkedEvents.includes(event.title)}
-          onBookmark={() => toggleBookmark(event.title)}
         />
       ))}
 
@@ -561,10 +550,6 @@ export default function HomeScreen() {
           return joinedEvents.includes(event.title);
         }
 
-        if (eventFilter === "bookmarks") {
-          return bookmarkedEvents.includes(event.title);
-        }
-
         const currentYear = new Date().getFullYear();
 
         const eventDate = new Date(`${event.date} ${currentYear}`);
@@ -636,18 +621,6 @@ export default function HomeScreen() {
               My events
             </Text>
           </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => setEventFilter("bookmarks")}>
-            <Text
-              style={
-                eventFilter === "bookmarks"
-                  ? styles.filterActive
-                  : styles.filter
-              }
-            >
-              Bookmarks 
-            </Text>
-          </TouchableOpacity>
         </View>
 
         <View style={styles.sectionRow}>
@@ -678,8 +651,6 @@ export default function HomeScreen() {
               button={
                 joinedEvents.includes(event.title) ? "Joined" : "Register"
               }
-              isBookmarked={bookmarkedEvents.includes(event.title)}
-              onBookmark={() => toggleBookmark(event.title)}
             />
           ))
         )}
@@ -799,8 +770,6 @@ export default function HomeScreen() {
             )
           }
           button="Manage"
-          isBookmarked={bookmarkedEvents.includes(event.title)}
-          onBookmark={() => toggleBookmark(event.title)}
         />
       ))}
 

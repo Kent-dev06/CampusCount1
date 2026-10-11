@@ -141,7 +141,7 @@ export default function HomeScreen() {
           <Text style={styles.link}>See all →</Text>
         </TouchableOpacity>
       </View>
-      ```tsx
+      
       {events.map((event, i) => {
         const isRegistered = joinedEvents.includes(event.title);
 
@@ -181,7 +181,7 @@ export default function HomeScreen() {
           />
         );
       })}
-      ```
+      
       <View style={styles.tip}>
         <Text style={styles.tipIcon}>✳</Text>
 

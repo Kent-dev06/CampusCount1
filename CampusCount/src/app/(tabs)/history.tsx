@@ -1,5 +1,7 @@
+import { useCampus } from "@/context/CampusContext";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 const ink = "#18251F";
 const green = "#176B4A";
 const muted = "#77827C";
@@ -10,6 +12,8 @@ function Label({ children }: { children: React.ReactNode }) {
 
 export default function HistoryScreen() {
   const insets = useSafeAreaInsets();
+  const { events, joinedEvents } = useCampus();
+
   return (
     <ScrollView
       style={styles.container}
@@ -29,7 +33,6 @@ export default function HistoryScreen() {
       <View style={styles.historySummary}>
         <View>
           <Text style={styles.historyBig}>92%</Text>
-
           <Text style={styles.historyCaption}>Overall attendance</Text>
         </View>
 
@@ -41,74 +44,53 @@ export default function HistoryScreen() {
       </View>
 
       <View style={styles.sectionRow}>
-        <Label>SEPTEMBER 2026</Label>
+        <Label>ALL EVENTS</Label>
 
-        <Text style={styles.countPill}>4 events</Text>
+        <Text style={styles.countPill}>
+          {events.length} {events.length === 1 ? "event" : "events"}
+        </Text>
       </View>
 
-      {[
-        [
-          "26",
-          "Campus Clean-up Drive",
-          "Main Quadrangle",
-          "8:12 AM",
-          "PRESENT",
-          "#DDF3E8",
-        ],
-        [
-          "21",
-          "Design Thinking Workshop",
-          "Innovation Lab",
-          "1:04 PM",
-          "PRESENT",
-          "#E7E8FF",
-        ],
-        [
-          "16",
-          "General Assembly",
-          "University Auditorium",
-          "9:20 AM",
-          "PRESENT",
-          "#FFF0D8",
-        ],
-        [
-          "08",
-          "Freshers Welcome Night",
-          "Open Grounds",
-          "—",
-          "ABSENT",
-          "#FBE5E2",
-        ],
-      ].map((row, i) => (
-        <View key={i} style={styles.historyItem}>
-          <View
-            style={[
-              styles.historyDate,
-              {
-                backgroundColor: row[5],
-              },
-            ]}
-          >
-            <Text style={styles.historyDay}>{row[0]}</Text>
-
-            <Text style={styles.historyMonth}>SEP</Text>
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.historyTitle}>{row[1]}</Text>
-
-            <Text style={styles.historyVenue}>
-              {row[2]} · {row[3]}
-            </Text>
-          </View>
-
-          <Text
-            style={[styles.status, row[4] === "ABSENT" && styles.statusAbsent]}
-          >
-            {row[4]}
+      {events.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyTitle}>No events yet</Text>
+          <Text style={styles.emptyText}>
+            Events will appear here when they are created.
           </Text>
         </View>
-      ))}
+      ) : (
+        events.map((event) => {
+          const isRegistered = joinedEvents.includes(event.title);
+
+          const dateParts = event.date.split(" ");
+
+          return (
+            <View key={event.id} style={styles.historyItem}>
+              <View
+                style={[styles.historyDate, { backgroundColor: event.color }]}
+              >
+                <Text style={styles.historyDay}>{dateParts[1] ?? ""}</Text>
+
+                <Text style={styles.historyMonth}>{dateParts[0] ?? ""}</Text>
+              </View>
+
+              <View style={styles.eventDetails}>
+                <Text style={styles.historyTitle}>{event.title}</Text>
+
+                <Text style={styles.historyVenue}>
+                  {event.place} · {event.time}
+                </Text>
+              </View>
+
+              <Text
+                style={[styles.status, !isRegistered && styles.statusUpcoming]}
+              >
+                {isRegistered ? "REGISTERED" : "UPCOMING"}
+              </Text>
+            </View>
+          );
+        })
+      )}
     </ScrollView>
   );
 }
@@ -235,6 +217,10 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
 
+  eventDetails: {
+    flex: 1,
+  },
+
   historyTitle: {
     color: ink,
     fontSize: 11,
@@ -254,7 +240,27 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
 
-  statusAbsent: {
-    color: "#B86654",
+  statusUpcoming: {
+    color: "#77827C",
+  },
+
+  emptyState: {
+    alignItems: "center",
+    backgroundColor: "#F7F8F5",
+    padding: 24,
+    borderRadius: 16,
+  },
+
+  emptyTitle: {
+    color: ink,
+    fontSize: 16,
+    fontWeight: "800",
+  },
+
+  emptyText: {
+    color: muted,
+    fontSize: 13,
+    textAlign: "center",
+    marginTop: 6,
   },
 });

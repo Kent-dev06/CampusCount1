@@ -106,7 +106,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {events.slice(0, 2).map((event, i) => (
+      {events.map((event, i) => (
         <EventCard
           key={`${event.title}-${i}`}
           item={event}

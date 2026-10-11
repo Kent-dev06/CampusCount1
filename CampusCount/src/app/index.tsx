@@ -57,7 +57,7 @@ export default function HomeScreen() {
 
   const [page, setPage] = useState<Page>("home");
 
-  const { role, name, setName, signedIn, signIn, signOut } = useCampus();
+  const { signedIn, signIn, name, setName, email, role, signOut } = useCampus();
 
   const [events, setEvents] = useState<EventItem[]>(initialEvents);
 
@@ -115,6 +115,10 @@ export default function HomeScreen() {
   const addEvent = () => {
     setEvents([
       {
+        id: `event-${Date.now()}`,
+        latitude: 0,
+        longitude: 0,
+        radius: 100,
         title: "New campus gathering",
         date: "OCT 18",
         time: "10:00 AM",
@@ -486,7 +490,7 @@ export default function HomeScreen() {
 
         <Text style={styles.profileName}>{name}</Text>
 
-        <Text style={styles.profileEmail}>alex.rivera@campus.edu</Text>
+        <Text style={styles.profileEmail}>{email}</Text>
 
         <Text style={styles.profileRole}>
           {role.toUpperCase()} · COMPUTER SCIENCE
@@ -508,7 +512,7 @@ export default function HomeScreen() {
       <Text style={styles.inputLabel}>Email address</Text>
 
       <TextInput
-        value="alex.rivera@campus.edu"
+        value={email}
         editable={false}
         style={[styles.input, styles.inputDisabled]}
       />
@@ -845,8 +849,8 @@ export default function HomeScreen() {
   if (!signedIn) {
     return (
       <LoginScreen
-        onLogin={(loggedInName, loggedInRole) => {
-          signIn(loggedInName, loggedInRole);
+        onLogin={(loggedInName, loggedInRole, loggedInEmail) => {
+          signIn(loggedInName, loggedInRole, loggedInEmail);
 
           router.replace(
             loggedInRole === "Organizer"

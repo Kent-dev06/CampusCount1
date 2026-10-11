@@ -19,7 +19,7 @@ function Label({ children }: { children: React.ReactNode }) {
 }
 
 export default function ProfileScreen() {
-  const { name, setName, role, signOut } = useCampus();
+  const { name, setName, email, role, signOut } = useCampus();
 
   const [displayName, setDisplayName] = useState(name);
 
@@ -37,7 +37,7 @@ export default function ProfileScreen() {
       <View style={styles.header}>
         <Label>ACCOUNT</Label>
 
-        <Text style={styles.title}>PROFILE TEST</Text>
+        <Text style={styles.title}>PROFILE</Text>
 
         <Text style={styles.subtitle}>Manage your CampusCount account.</Text>
       </View>
@@ -54,7 +54,7 @@ export default function ProfileScreen() {
 
         <Text style={styles.profileName}>{name}</Text>
 
-        <Text style={styles.profileEmail}>alex.rivera@campus.edu</Text>
+        <Text style={styles.profileEmail}>{email}</Text>
 
         <Text style={styles.profileRole}>
           {role.toUpperCase()} · COMPUTER SCIENCE
@@ -76,7 +76,7 @@ export default function ProfileScreen() {
       <Text style={styles.inputLabel}>Email address</Text>
 
       <TextInput
-        value="alex.rivera@campus.edu"
+        value={email}
         editable={false}
         style={[styles.input, styles.inputDisabled]}
       />

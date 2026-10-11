@@ -7,6 +7,7 @@ import {
   View,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import EventCard from "@/components/EventCard";
 import { useCampus } from "@/context/CampusContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -20,9 +21,33 @@ function Label({ children }: { children: React.ReactNode }) {
 }
 
 export default function HomeScreen() {
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const currentDate = currentTime.toLocaleDateString("en-PH", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
+  const formattedTime = currentTime.toLocaleTimeString("en-PH", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { events, name } = useCampus();
+
+  const { name, events, joinedEvents, registerForEvent, cancelRegistration } =
+    useCampus();
 
   const initials = name
     .split(" ")
@@ -39,7 +64,19 @@ export default function HomeScreen() {
     >
       <View style={styles.topline}>
         <View>
-          <Text style={styles.eyebrow}>MONDAY, SEPTEMBER 28</Text>
+          <Text style={styles.eyebrow}>{currentDate.toUpperCase()}</Text>
+
+          <Text
+            style={{
+              color: muted,
+              fontSize: 12,
+              fontWeight: "600",
+              marginTop: 4,
+              marginBottom: 4,
+            }}
+          >
+            {formattedTime}
+          </Text>
 
           <Text style={styles.greeting}>
             Good morning, {name} <Text style={{ color: "#E5A847" }}>✦</Text>
@@ -53,7 +90,6 @@ export default function HomeScreen() {
           <Text style={styles.avatarText}>{initials}</Text>
         </TouchableOpacity>
       </View>
-
       <View style={styles.hero}>
         <View style={styles.heroAccent}>
           <Text style={styles.heroKicker}>YOUR CAMPUS, IN SYNC</Text>
@@ -76,7 +112,6 @@ export default function HomeScreen() {
           <Text style={styles.orbGlyph}>✓</Text>
         </View>
       </View>
-
       <View style={styles.statsRow}>
         <View style={styles.stat}>
           <Text style={styles.statNumber}>12</Text>
@@ -99,7 +134,6 @@ export default function HomeScreen() {
           <Text style={styles.statChange}>Looking good!</Text>
         </View>
       </View>
-
       <View style={styles.sectionRow}>
         <Label>UP NEXT</Label>
 
@@ -107,21 +141,47 @@ export default function HomeScreen() {
           <Text style={styles.link}>See all →</Text>
         </TouchableOpacity>
       </View>
+      ```tsx
+      {events.map((event, i) => {
+        const isRegistered = joinedEvents.includes(event.title);
 
-      {events.slice(0, 2).map((event, i) => (
-        <EventCard
-          key={`${event.title}-${i}`}
-          item={event}
-          onPress={() =>
-            Alert.alert(
-              event.title,
-              `${event.date} · ${event.time}\n${event.place}\n${event.attending} students attending`,
-            )
-          }
-          button="Details"
-        />
-      ))}
-
+        return (
+          <EventCard
+            key={`${event.title}-${i}`}
+            item={event}
+            onPress={() => {
+              if (isRegistered) {
+                Alert.alert(
+                  "Cancel registration?",
+                  `Do you want to leave ${event.title}?`,
+                  [
+                    { text: "Keep registration", style: "cancel" },
+                    {
+                      text: "Leave event",
+                      style: "destructive",
+                      onPress: () => cancelRegistration(event),
+                    },
+                  ],
+                );
+              } else {
+                Alert.alert(
+                  "Register for event?",
+                  `Do you want to join ${event.title}?`,
+                  [
+                    { text: "Not now", style: "cancel" },
+                    {
+                      text: "Register",
+                      onPress: () => registerForEvent(event),
+                    },
+                  ],
+                );
+              }
+            }}
+            button={isRegistered ? "Cancel registration" : "Register"}
+          />
+        );
+      })}
+      ```
       <View style={styles.tip}>
         <Text style={styles.tipIcon}>✳</Text>
 

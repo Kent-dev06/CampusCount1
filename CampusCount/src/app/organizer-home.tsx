@@ -68,7 +68,10 @@ export default function OrganizerHomeScreen() {
         <Text style={styles.orgDecoration}>✳</Text>
       </View>
 
-      <TouchableOpacity style={styles.action} onPress={addEvent}>
+      <TouchableOpacity
+        style={styles.action}
+        onPress={() => router.push("/create-event")}
+      >
         <Text style={styles.actionText}>＋ Create a new event</Text>
       </TouchableOpacity>
 

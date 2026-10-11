@@ -12,6 +12,7 @@ import {
 import EventCard from "@/components/EventCard";
 import { type EventItem } from "@/data/events";
 import { useCampus } from "@/context/CampusContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ink = "#18251F";
 const green = "#176B4A";
@@ -21,43 +22,87 @@ function Label({ children }: { children: React.ReactNode }) {
   return <Text style={styles.label}>{children}</Text>;
 }
 
+function parseEventDate(value: string): Date | null {
+  const match = value
+    .trim()
+    .match(/^([A-Za-z]{3,9})\s+(\d{1,2})(?:,?\s+(\d{4}))?$/);
+
+  if (!match) {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  const months: Record<string, number> = {
+    JAN: 0,
+    FEB: 1,
+    MAR: 2,
+    APR: 3,
+    MAY: 4,
+    JUN: 5,
+    JUL: 6,
+    AUG: 7,
+    SEP: 8,
+    OCT: 9,
+    NOV: 10,
+    DEC: 11,
+  };
+
+  const month = months[match[1].slice(0, 3).toUpperCase()];
+  const day = Number(match[2]);
+  const year = Number(match[3] ?? new Date().getFullYear());
+
+  if (month === undefined || day < 1 || day > 31) return null;
+
+  const date = new Date(year, month, day);
+
+  if (date.getMonth() !== month || date.getDate() !== day) return null;
+
+  return date;
+}
+
 export default function EventsScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
+
   const {
     events,
     joinedEvents,
     registerForEvent,
+    cancelRegistration,
     eventFilter,
     setEventFilter,
     role,
-    addEvent,
   } = useCampus();
 
   const [query, setQuery] = useState("");
 
   const filteredEvents = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const startOfWeek = new Date(today);
+    const daysSinceMonday = (today.getDay() + 6) % 7;
+    startOfWeek.setDate(today.getDate() - daysSinceMonday);
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7);
+
     return events
       .filter((event) =>
-        event.title.toLowerCase().includes(query.toLowerCase()),
+        event.title.toLowerCase().includes(query.trim().toLowerCase()),
       )
       .filter((event) => {
-        if (eventFilter === "all") {
-          return true;
-        }
+        if (eventFilter === "all") return true;
 
         if (eventFilter === "mine") {
           return joinedEvents.includes(event.title);
         }
 
-        const currentYear = new Date().getFullYear();
-        const eventDate = new Date(`${event.date} ${currentYear}`);
+        const eventDate = parseEventDate(event.date);
+        if (!eventDate) return false;
 
-        const today = new Date();
-
-        const nextWeek = new Date();
-        nextWeek.setDate(today.getDate() + 7);
-
-        return eventDate >= today && eventDate <= nextWeek;
+        eventDate.setHours(0, 0, 0, 0);
+        return eventDate >= startOfWeek && eventDate < endOfWeek;
       });
   }, [events, query, eventFilter, joinedEvents]);
 
@@ -73,94 +118,79 @@ export default function EventsScreen() {
     registerForEvent(event);
   };
 
+  const handleCancel = (event: EventItem) => {
+    Alert.alert(
+      "Cancel registration?",
+      `Are you sure you want to cancel your registration for ${event.title}?`,
+      [
+        { text: "Keep registration", style: "cancel" },
+        {
+          text: "Cancel registration",
+          style: "destructive",
+          onPress: () => cancelRegistration(event),
+        },
+      ],
+    );
+  };
+
   if (role === "Organizer") {
     return (
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.top + 12 },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
           <Label>ORGANIZER SPACE</Label>
-
           <Text style={styles.title}>Events</Text>
-
           <Text style={styles.subtitle}>Manage your campus events.</Text>
         </View>
 
-        <View
-          style={{
-            backgroundColor: "#F4F6F4",
-            borderRadius: 16,
-            padding: 18,
-            marginBottom: 24,
-          }}
-        >
-          <Text style={styles.label}>YOUR EVENTS</Text>
-
-          <Text
-            style={{
-              color: ink,
-              fontSize: 32,
-              fontWeight: "800",
-              marginTop: 6,
-            }}
-          >
-            {events.length}
-          </Text>
-
-          <Text style={styles.subtitle}>events on the calendar</Text>
+        <View style={styles.organizerSummary}>
+          <Text style={styles.summaryLabel}>YOUR EVENTS</Text>
+          <Text style={styles.summaryNumber}>{events.length}</Text>
+          <Text style={styles.summaryCaption}>events on the calendar</Text>
         </View>
 
         <TouchableOpacity
-          style={{
-            backgroundColor: green,
-            borderRadius: 14,
-            paddingVertical: 15,
-            paddingHorizontal: 18,
-            marginBottom: 28,
-          }}
-          onPress={addEvent}
+          style={styles.createButton}
+          onPress={() => router.push("/create-event")}
         >
-          <Text
-            style={{
-              color: "#FFFFFF",
-              fontSize: 15,
-              fontWeight: "800",
-            }}
-          >
-            + Create a new event
-          </Text>
+          <Text style={styles.createButtonText}>+ Create a new event</Text>
         </TouchableOpacity>
 
         <View style={styles.sectionRow}>
           <Label>EVENT CALENDAR</Label>
-
           <Text style={styles.countPill}>
             {events.length} {events.length === 1 ? "event" : "events"}
           </Text>
         </View>
 
-        {events.map((event, i) => (
-          <EventCard
-            key={`${event.title}-${i}`}
-            item={event}
-            button="Manage"
-            onPress={() => {
-              Alert.alert(
-                event.title,
-                `${event.attending} attendees · ${event.place}`,
-                [
-                  { text: "Close" },
-                  {
-                    text: "View report",
-                    onPress: () => router.push("/reports"),
-                  },
-                ],
-              );
-            }}
-          />
-        ))}
+        {events.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>No events yet</Text>
+            <Text style={styles.emptyText}>
+              Create your first campus event to get started.
+            </Text>
+          </View>
+        ) : (
+          events.map((event, i) => (
+            <EventCard
+              key={`${event.id}-${i}`}
+              item={event}
+              button="Manage"
+              onPress={() =>
+                router.push({
+                  pathname: "/create-event",
+                  params: { editId: event.id },
+                })
+              }
+            />
+          ))
+        )}
       </ScrollView>
     );
   }
@@ -168,14 +198,12 @@ export default function EventsScreen() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + 12 }]}
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.header}>
         <Label>CAMPUS LIFE</Label>
-
         <Text style={styles.title}>Events</Text>
-
         <Text style={styles.subtitle}>
           Find your people.{"\n"}Make your mark.
         </Text>
@@ -184,7 +212,7 @@ export default function EventsScreen() {
       <TextInput
         value={query}
         onChangeText={setQuery}
-        placeholder="⌕   Search events"
+        placeholder="Search events"
         placeholderTextColor="#87918B"
         style={styles.search}
       />
@@ -217,7 +245,6 @@ export default function EventsScreen() {
 
       <View style={styles.sectionRow}>
         <Label>UPCOMING</Label>
-
         <Text style={styles.countPill}>
           {filteredEvents.length}{" "}
           {filteredEvents.length === 1 ? "event" : "events"}
@@ -226,58 +253,50 @@ export default function EventsScreen() {
 
       {filteredEvents.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>‹</Text>
-
+          <Text style={styles.emptyIcon}>◇</Text>
           <Text style={styles.emptyTitle}>No events found</Text>
-
           <Text style={styles.emptyText}>
             Try another filter or search for a different event.
           </Text>
         </View>
       ) : (
-        filteredEvents.map((event, i) => (
-          <EventCard
-            key={`${event.title}-${i}`}
-            item={event}
-            onPress={() => handleRegister(event)}
-            button={joinedEvents.includes(event.title) ? "Joined" : "Register"}
-          />
-        ))
+        filteredEvents.map((event, i) => {
+          const isRegistered = joinedEvents.includes(event.title);
+
+          return (
+            <View key={`${event.id}-${i}`} style={styles.eventWrapper}>
+              <EventCard
+                item={event}
+                onPress={() =>
+                  isRegistered ? handleCancel(event) : handleRegister(event)
+                }
+                button={isRegistered ? "Cancel registration" : "Register"}
+              />
+              {isRegistered && (
+                <Text style={styles.registeredNote}>
+                  ✓ You are registered for this event
+                </Text>
+              )}
+            </View>
+          );
+        })
       )}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  header: {
-    marginBottom: 24,
-  },
+  container: { flex: 1, backgroundColor: "#FFFFFF" },
+  content: { padding: 20, paddingBottom: 40 },
+  header: { marginBottom: 24 },
   label: {
     color: green,
     fontSize: 12,
     fontWeight: "700",
     letterSpacing: 1.2,
   },
-  title: {
-    color: ink,
-    fontSize: 32,
-    fontWeight: "800",
-    marginTop: 6,
-  },
-  subtitle: {
-    color: muted,
-    fontSize: 16,
-    lineHeight: 23,
-    marginTop: 6,
-  },
+  title: { color: ink, fontSize: 32, fontWeight: "800", marginTop: 6 },
+  subtitle: { color: muted, fontSize: 16, lineHeight: 23, marginTop: 6 },
   search: {
     backgroundColor: "#F4F6F4",
     borderRadius: 14,
@@ -292,16 +311,8 @@ const styles = StyleSheet.create({
     gap: 22,
     marginBottom: 24,
   },
-  filter: {
-    color: muted,
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  filterActive: {
-    color: green,
-    fontSize: 14,
-    fontWeight: "800",
-  },
+  filter: { color: muted, fontSize: 14, fontWeight: "600" },
+  filterActive: { color: green, fontSize: 14, fontWeight: "800" },
   sectionRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -317,21 +328,58 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
   },
+  organizerSummary: {
+    backgroundColor: green,
+    borderRadius: 18,
+    padding: 22,
+    marginBottom: 24,
+  },
+  summaryLabel: {
+    color: "#9ED8B8",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1,
+  },
+  summaryNumber: {
+    color: "#FFFFFF",
+    fontSize: 42,
+    fontWeight: "800",
+    marginTop: 8,
+  },
+  summaryCaption: {
+    color: "#C8D2CC",
+    fontSize: 13,
+    fontWeight: "700",
+    marginTop: 4,
+  },
+  createButton: {
+    backgroundColor: green,
+    borderRadius: 14,
+    paddingVertical: 15,
+    paddingHorizontal: 18,
+    marginBottom: 28,
+  },
+  createButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "800",
+  },
+  eventWrapper: { marginBottom: 6 },
+  registeredNote: {
+    color: green,
+    fontSize: 11,
+    fontWeight: "600",
+    marginTop: -5,
+    marginBottom: 10,
+    marginLeft: 4,
+  },
   emptyState: {
     alignItems: "center",
     paddingVertical: 50,
     paddingHorizontal: 20,
   },
-  emptyIcon: {
-    color: muted,
-    fontSize: 36,
-    marginBottom: 10,
-  },
-  emptyTitle: {
-    color: ink,
-    fontSize: 18,
-    fontWeight: "800",
-  },
+  emptyIcon: { color: muted, fontSize: 36, marginBottom: 10 },
+  emptyTitle: { color: ink, fontSize: 18, fontWeight: "800" },
   emptyText: {
     color: muted,
     textAlign: "center",

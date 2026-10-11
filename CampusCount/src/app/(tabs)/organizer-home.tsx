@@ -22,7 +22,7 @@ function Label({ children }: { children: React.ReactNode }) {
 export default function OrganizerHomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { events, addEvent, name } = useCampus();
+  const { events, name } = useCampus();
 
   const initials = name
     .split(" ")
@@ -70,7 +70,10 @@ export default function OrganizerHomeScreen() {
         <Text style={styles.orgDecoration}>✳</Text>
       </View>
 
-      <TouchableOpacity style={styles.action} onPress={addEvent}>
+      <TouchableOpacity
+        style={styles.action}
+        onPress={() => router.push("/create-event")}
+      >
         <Text style={styles.actionText}>＋ Create a new event</Text>
       </TouchableOpacity>
 
@@ -87,17 +90,10 @@ export default function OrganizerHomeScreen() {
           key={`${event.title}-${i}`}
           item={event}
           onPress={() =>
-            Alert.alert(
-              event.title,
-              `${event.attending} attendees · ${event.place}`,
-              [
-                { text: "Close" },
-                {
-                  text: "View report",
-                  onPress: () => router.push("/reports"),
-                },
-              ],
-            )
+            router.push({
+              pathname: "/create-event",
+              params: { editId: event.id },
+            })
           }
           button="Manage"
         />

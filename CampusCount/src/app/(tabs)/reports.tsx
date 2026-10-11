@@ -38,18 +38,29 @@ export default function ReportsScreen() {
       </View>
 
       <View style={styles.reportBanner}>
-        <Text style={styles.reportLabel}>TOTAL CHECK-INS · THIS MONTH</Text>
+        <Text style={styles.reportLabel}>TOTAL ATTENDEES · ALL EVENTS</Text>
 
-        <Text style={styles.reportNumber}>1,284</Text>
+        <Text style={styles.reportNumber}>
+          {events.reduce((total, event) => total + event.attending, 0)}
+        </Text>
 
-        <Text style={styles.reportUp}>↑ 18% more than August</Text>
+        <Text style={styles.reportUp}>
+          Across {events.length} {events.length === 1 ? "event" : "events"}
+        </Text>
       </View>
 
       <View style={styles.reportStats}>
         <View style={styles.reportStat}>
-          <Text style={styles.reportStatNum}>86%</Text>
+          <Text style={styles.reportStatNum}>
+            {events.length > 0
+              ? Math.round(
+                  events.reduce((total, event) => total + event.attending, 0) /
+                    events.length,
+                )
+              : 0}
+          </Text>
 
-          <Text style={styles.reportStatLabel}>AVG.{"\n"}TURNOUT</Text>
+          <Text style={styles.reportStatLabel}>AVG.{"\n"}ATTENDEES</Text>
         </View>
 
         <View style={styles.reportStat}>
@@ -61,10 +72,12 @@ export default function ReportsScreen() {
 
       <Label>TOP ATTENDED EVENTS</Label>
 
-      {events.slice(0, 3).map((event, i) => (
-        <View key={`${event.title}-${i}`} style={styles.reportRow}>
+      {events.map((event, i) => (
+        <View key={event.id} style={styles.reportRow}>
           <View style={styles.reportRank}>
-            <Text style={styles.reportRankText}>0{i + 1}</Text>
+            <Text style={styles.reportRankText}>
+              {String(i + 1).padStart(2, "0")}
+            </Text>
           </View>
 
           <View style={{ flex: 1 }}>

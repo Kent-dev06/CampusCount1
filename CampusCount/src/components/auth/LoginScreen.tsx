@@ -13,7 +13,7 @@ import {
 } from "react-native";
 
 type LoginScreenProps = {
-  onLogin: (name: string, role: "Student" | "Organizer") => void;
+  onLogin: (name: string, role: "Student" | "Organizer", email: string) => void;
 };
 
 const green = "#176B4A";
@@ -63,7 +63,11 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         return;
       }
 
-      onLogin(data.user.name, data.user.role);
+      onLogin(
+        data.user.name,
+        data.user.role,
+        data.user.email || username.trim(),
+      );
     } catch (error) {
       console.error(error);
 
@@ -74,19 +78,19 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     }
   };
 
-  const handleFacebookLogin = () => {
-    Alert.alert(
-      "Facebook Login",
-      "Facebook authentication will be connected in a later version.",
-    );
-  };
+  // const handleFacebookLogin = () => {
+  //   Alert.alert(
+  //     "Facebook Login",
+  //     "Facebook authentication will be connected in a later version.",
+  //   );
+  // };
 
-  const handleGoogleLogin = () => {
-    Alert.alert(
-      "Google Login",
-      "Google authentication will be connected in a later version.",
-    );
-  };
+  // const handleGoogleLogin = () => {
+  //   Alert.alert(
+  //     "Google Login",
+  //     "Google authentication will be connected in a later version.",
+  //   );
+  // };
 
   const handleForgotPassword = () => {
     Alert.alert(
@@ -115,7 +119,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
             </Text>
           </View>
 
-          <View style={styles.socialContainer}>
+          {/* <View style={styles.socialContainer}>
             <TouchableOpacity
               style={styles.facebookButton}
               activeOpacity={0.8}
@@ -145,12 +149,12 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
 
               <Text style={styles.googleText}>Login with Google Account</Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
 
           <View style={styles.dividerContainer}>
             <View style={styles.divider} />
 
-            <Text style={styles.dividerText}>OR</Text>
+            {/* <Text style={styles.dividerText}>OR</Text> */}
 
             <View style={styles.divider} />
           </View>
@@ -193,13 +197,13 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.forgotButton}
               onPress={handleForgotPassword}
               activeOpacity={0.7}
             >
               <Text style={styles.forgotText}>Forgot Password?</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <TouchableOpacity
               style={styles.loginButton}
@@ -210,10 +214,10 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.helpText}>
+          {/* <Text style={styles.helpText}>
             Don't have an account? Please contact your school administrator for
             assistance.
-          </Text>
+          </Text> */}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

@@ -71,6 +71,7 @@ export default function EventsScreen() {
     events,
     joinedEvents,
     registerForEvent,
+    deleteEvent,
     eventFilter,
     setEventFilter,
     role,
@@ -172,17 +173,34 @@ export default function EventsScreen() {
           </View>
         ) : (
           events.map((event, i) => (
-            <EventCard
-              key={`${event.id}-${i}`}
-              item={event}
-              button="Manage"
-              onPress={() =>
-                router.push({
-                  pathname: "/create-event",
-                  params: { editId: event.id },
-                })
-              }
-            />
+            <View key={`${event.id}-${i}`} style={styles.organizerEvent}>
+              <EventCard
+                item={event}
+                button="Manage"
+                onPress={() =>
+                  router.push({
+                    pathname: "/create-event",
+                    params: { editId: event.id },
+                  })
+                }
+                onDelete={() =>
+                  Alert.alert(
+                    "Delete event?",
+                    `Delete "${event.title}"? This will also remove its student registrations.`,
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      {
+                        text: "Delete",
+                        style: "destructive",
+                        onPress: () => {
+                          void deleteEvent(event);
+                        },
+                      },
+                    ],
+                  )
+                }
+              />
+            </View>
           ))
         )}
       </ScrollView>
@@ -278,6 +296,21 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 24,
+  },
+  organizerEvent: {
+    marginBottom: 12,
+  },
+  deleteButton: {
+    alignSelf: "flex-end",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginTop: 6,
+    borderRadius: 8,
+    backgroundColor: "#FEE2E2",
+  },
+  deleteButtonText: {
+    color: "#B91C1C",
+    fontWeight: "600",
   },
   label: {
     color: green,

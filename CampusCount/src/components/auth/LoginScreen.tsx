@@ -13,7 +13,12 @@ import {
 } from "react-native";
 
 type LoginScreenProps = {
-  onLogin: (name: string, role: "Student" | "Organizer", email: string) => void;
+  onLogin: (
+    name: string,
+    role: "Student" | "Organizer",
+    email: string,
+    token: string,
+  ) => void;
 };
 
 const green = "#176B4A";
@@ -54,12 +59,23 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       );
 
       const data = await response.json();
+console.log("Login response status:", response.status);
+console.log("Login response fields:", {
+  hasUser: Boolean(data.user),
+  nameType: typeof data.user?.name,
+  role: data.user?.role,
+  tokenType: typeof data.token,
+  hasToken: Boolean(data.token),
+});
 
-      if (!response.ok) {
-        Alert.alert(
-          "Login failed",
-          data.message || "Invalid email or password.",
-        );
+      if (
+        !data.user ||
+        typeof data.user.name !== "string" ||
+        !["Student", "Organizer"].includes(data.user.role) ||
+        typeof data.token !== "string" ||
+        !data.token
+      ) {
+        Alert.alert("Login failed", "The server returned an invalid response.");
         return;
       }
 
@@ -67,6 +83,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         data.user.name,
         data.user.role,
         data.user.email || username.trim(),
+        data.token,
       );
     } catch (error) {
       console.error(error);

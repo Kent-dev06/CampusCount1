@@ -849,8 +849,8 @@ export default function HomeScreen() {
   if (!signedIn) {
     return (
       <LoginScreen
-        onLogin={(loggedInName, loggedInRole, loggedInEmail) => {
-          signIn(loggedInName, loggedInRole, loggedInEmail);
+        onLogin={(loggedInName, loggedInRole, loggedInEmail, loggedInToken) => {
+          signIn(loggedInName, loggedInRole, loggedInEmail, loggedInToken);
 
           router.replace(
             loggedInRole === "Organizer"

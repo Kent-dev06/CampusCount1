@@ -221,7 +221,7 @@ export default function CreateEventScreen() {
     }
   };
 
-  const handleSaveEvent = () => {
+  const handleSaveEvent = async () => {
     const attendanceRadius = Number(radius);
     const formattedTime = `${hour}:${minute} ${period}`;
 
@@ -268,11 +268,14 @@ export default function CreateEventScreen() {
 
     if (editing && existingEvent) {
       updateEvent(existingEvent.id, eventData);
+      router.back();
     } else {
-      addEvent(eventData);
-    }
+      const success = await addEvent(eventData);
 
-    router.back();
+      if (success) {
+        router.back();
+      }
+    }
   };
 
   return (

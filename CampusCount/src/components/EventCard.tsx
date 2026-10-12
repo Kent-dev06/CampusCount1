@@ -5,6 +5,7 @@ type EventCardProps = {
   item: EventItem;
   onPress: () => void;
   button?: string;
+  onDelete?: () => void;
 };
 
 const ink = "#18251F";
@@ -15,6 +16,7 @@ export default function EventCard({
   item,
   onPress,
   button = "View details",
+  onDelete,
 }: EventCardProps) {
   const dateParts = item.date.trim().split(/\s+/);
   const month = dateParts[0] ?? "";
@@ -47,13 +49,25 @@ export default function EventCard({
       <View style={styles.eventBottom}>
         <Text style={styles.tag}>{item.kind}</Text>
 
-        <TouchableOpacity
-          onPress={onPress}
-          style={styles.detailsButton}
-          activeOpacity={0.75}
-        >
-          <Text style={styles.link}>{button} →</Text>
-        </TouchableOpacity>
+        <View style={styles.actions}>
+          <TouchableOpacity
+            onPress={onPress}
+            style={styles.detailsButton}
+            activeOpacity={0.75}
+          >
+            <Text style={styles.link}>{button} →</Text>
+          </TouchableOpacity>
+
+          {onDelete && (
+            <TouchableOpacity
+              onPress={onDelete}
+              style={styles.deleteButton}
+              activeOpacity={0.75}
+            >
+              <Text style={styles.deleteButtonText}>Delete</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -122,6 +136,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    flexWrap: "wrap",
     gap: 10,
     marginTop: 14,
     paddingTop: 12,
@@ -139,6 +154,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
     overflow: "hidden",
   },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   detailsButton: {
     backgroundColor: "#E9F4EC",
     paddingHorizontal: 12,
@@ -147,6 +167,17 @@ const styles = StyleSheet.create({
   },
   link: {
     color: green,
+    fontWeight: "800",
+    fontSize: 11,
+  },
+  deleteButton: {
+    backgroundColor: "#FEE2E2",
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 10,
+  },
+  deleteButtonText: {
+    color: "#B91C1C",
     fontWeight: "800",
     fontSize: 11,
   },

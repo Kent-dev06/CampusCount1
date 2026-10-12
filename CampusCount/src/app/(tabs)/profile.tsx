@@ -24,7 +24,6 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { name, setName, email, role, signOut } = useCampus();
-
   const [displayName, setDisplayName] = useState(name);
 
   const handleNameChange = (value: string) => {
@@ -92,6 +91,7 @@ export default function ProfileScreen() {
         onPress={() =>
           Alert.alert("Notifications", "Event reminders are turned on.")
         }
+        activeOpacity={0.8}
       >
         <Text style={styles.settingIcon}>♧</Text>
 
@@ -100,12 +100,34 @@ export default function ProfileScreen() {
         <Text style={styles.settingValue}>On ›</Text>
       </TouchableOpacity>
 
+      {role === "Organizer" && (
+        <TouchableOpacity
+          style={styles.registerRow}
+          onPress={() => router.push("/register-student")}
+          activeOpacity={0.8}
+        >
+          <View style={styles.registerIcon}>
+            <Text style={styles.registerIconText}>+</Text>
+          </View>
+
+          <View style={styles.registerInfo}>
+            <Text style={styles.registerTitle}>Register Student</Text>
+            <Text style={styles.registerDescription}>
+              Create a student campus account
+            </Text>
+          </View>
+
+          <Text style={styles.registerChevron}>›</Text>
+        </TouchableOpacity>
+      )}
+
       <TouchableOpacity
         style={[styles.action, styles.actionLight]}
         onPress={() => {
           signOut();
           router.replace("/");
         }}
+        activeOpacity={0.85}
       >
         <Text style={[styles.actionText, styles.actionTextLight]}>
           Sign out
@@ -258,6 +280,51 @@ const styles = StyleSheet.create({
   settingValue: {
     color: muted,
     fontSize: 10,
+  },
+
+  registerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderColor: "#E9EDE8",
+    gap: 12,
+  },
+
+  registerIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: "#DDF3E8",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  registerIconText: {
+    color: green,
+    fontSize: 25,
+    fontWeight: "600",
+  },
+
+  registerInfo: {
+    flex: 1,
+  },
+
+  registerTitle: {
+    color: ink,
+    fontSize: 13,
+    fontWeight: "800",
+  },
+
+  registerDescription: {
+    color: muted,
+    fontSize: 11,
+    marginTop: 4,
+  },
+
+  registerChevron: {
+    color: green,
+    fontSize: 25,
   },
 
   action: {

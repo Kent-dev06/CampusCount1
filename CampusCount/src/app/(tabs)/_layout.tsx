@@ -9,10 +9,8 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-
         tabBarActiveTintColor: "#176B4A",
         tabBarInactiveTintColor: "#77827C",
-
         tabBarStyle: {
           height: 65,
           paddingBottom: 8,
@@ -28,7 +26,6 @@ export default function TabLayout() {
             height: -3,
           },
         },
-
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: "600",
@@ -99,11 +96,7 @@ export default function TabLayout() {
           title: "Reports",
           href: role === "Organizer" ? "/reports" : null,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name="bar-chart-outline"
-              size={size}
-              color={color}
-            />
+            <Ionicons name="bar-chart-outline" size={size} color={color} />
           ),
         }}
       />
@@ -115,6 +108,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="register-student"
+        options={{
+          href: null,
         }}
       />
     </Tabs>
